@@ -1,10 +1,4 @@
-﻿using System.Threading.Tasks;
-
-using Shouldly;
-
-using Xunit;
-
-namespace Sales.Web.Tests.Controllers
+﻿namespace Sales.Web.Tests.Controllers
 {
     public class HomeController_Tests : SalesWebTestBase
     {

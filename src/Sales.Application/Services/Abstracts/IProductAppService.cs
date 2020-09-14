@@ -10,6 +10,6 @@ namespace Sales.Application.Services.Abstracts
     public interface IProductAppService : IApplicationService
     {
         [HttpPost]
-        ProductDto CreateProduct(CreateProductInput input);
+        ProductDto CreateProductPlan(CreateProductPlanInput input);
     }
 }

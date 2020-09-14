@@ -1,11 +1,22 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 
 using Abp.Domain.Values;
 
 namespace Sales.Domain.ValueObjects.Plans
 {
+    [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
     public class PlanStatus : ValueObject
     {
+        public PlanStatus(PlanStatusValue status)
+        {
+            Status = status;
+        }
+
+        public PlanStatus()
+        {
+        }
+
         public enum PlanStatusValue
         {
             Created,
@@ -18,6 +29,11 @@ namespace Sales.Domain.ValueObjects.Plans
         protected override IEnumerable<object> GetAtomicValues()
         {
             yield return Status;
+        }
+
+        private string GetDebuggerDisplay()
+        {
+            return Status.ToString();
         }
     }
 }

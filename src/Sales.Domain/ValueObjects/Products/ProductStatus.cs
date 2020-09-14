@@ -17,6 +17,7 @@ namespace Sales.Domain.ValueObjects.Products
 
         public enum ProductStatusValue
         {
+            Created,
             Active,
             Canceled
         }

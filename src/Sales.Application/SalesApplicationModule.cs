@@ -1,18 +1,20 @@
-﻿using System;
+﻿using System.Collections.Generic;
 
 using Abp.AspNetCore.Configuration;
 using Abp.AutoMapper;
+using Abp.FluentValidation;
 using Abp.Modules;
 using Abp.Reflection.Extensions;
 
-using Sales.Application.Dtos.Products;
-using Sales.Domain.Entities.Products;
-using Sales.Domain.ValueObjects.Products;
+using AutoMapper;
+
+using Sales.Application.MapperProfiles.Products;
 
 namespace Sales
 {
     [DependsOn(
         typeof(SalesCoreModule),
+        typeof(AbpFluentValidationModule),
         typeof(AbpAutoMapperModule))]
     public class SalesApplicationModule : AbpModule
     {
@@ -20,16 +22,25 @@ namespace Sales
         {
             Configuration.Modules.AbpAutoMapper().Configurators.Add(config =>
             {
-                config.CreateMap<CreateProductInput, Product>()
-                      .ForMember(u => u.Name, options => options.MapFrom(input => input.Name))
-                      .ForMember(u => u.Type, options => options.MapFrom(input => new ProductType((ProductType.ProductTypeValue)Enum.Parse(typeof(ProductType.ProductTypeValue), input.Type))));
+                config.AddProfile(new CreateProductInputProfile());
             });
         }
 
         public override void Initialize()
         {
-            IocManager.RegisterAssemblyByConvention(typeof(SalesApplicationModule).GetAssembly());
-            Configuration.Modules.AbpAspNetCore().CreateControllersForAppServices(typeof(SalesApplicationModule).Assembly, moduleName: "app", useConventionalHttpVerbs: true);
+            var thisAssembly = typeof(SalesApplicationModule).GetAssembly();
+
+            IocManager.RegisterAssemblyByConvention(thisAssembly);
+            Configuration.Modules.AbpAspNetCore().CreateControllersForAppServices(thisAssembly, moduleName: "app", useConventionalHttpVerbs: true);
+
+            Configuration.Modules.AbpAutoMapper().Configurators.Add(
+                // Scan the assembly for classes which inherit from AutoMapper.Profile
+                cfg => cfg.AddProfiles(new List<Profile>()
+                {
+                    new CreateProductInputProfile(),
+                    new CreateProductPlanInputProfile()
+                })
+            );
 
         }
     }
