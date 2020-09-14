@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.Extensions.Configuration;
 
 using Sales.Configuration;
-using Sales.Domain;
 using Sales.EntityFrameworkCore;
 
 namespace Sales.Web.Startup
@@ -29,8 +28,6 @@ namespace Sales.Web.Startup
         public override void PreInitialize()
         {
             Configuration.DefaultNameOrConnectionString = _appConfiguration.GetConnectionString(SalesConsts.ConnectionStringName);
-
-            Configuration.Navigation.Providers.Add<SalesNavigationProvider>();
 
             Configuration.Modules.AbpAspNetCore()
                 .CreateControllersForAppServices(

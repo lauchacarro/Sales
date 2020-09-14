@@ -6,6 +6,15 @@ namespace Sales.Domain.ValueObjects.Products
 {
     public class ProductStatus : ValueObject
     {
+        public ProductStatus(ProductStatusValue status)
+        {
+            Status = status;
+        }
+
+        public ProductStatus()
+        {
+        }
+
         public enum ProductStatusValue
         {
             Active,

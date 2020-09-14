@@ -8,13 +8,14 @@
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-    <RootNamespace>Sales</RootNamespace>
+    <RootNamespace>Sales.Application</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Sales.Core\Sales.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Abp.EntityFrameworkCore" Version="5.10.1" />
-    <PackageReference Include="Abp.AutoMapper" Version="5.10.1" />
+    <PackageReference Include="Abp.AspNetCore" Version="5.12.0" />
+    <PackageReference Include="Abp.EntityFrameworkCore" Version="5.12.0" />
+    <PackageReference Include="Abp.AutoMapper" Version="5.12.0" />
   </ItemGroup>
 </Project>

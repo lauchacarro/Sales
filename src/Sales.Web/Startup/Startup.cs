@@ -8,7 +8,6 @@ using Castle.Facilities.Logging;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -27,10 +26,19 @@ namespace Sales.Web.Startup
                 DbContextOptionsConfigurer.Configure(options.DbContextOptions, options.ConnectionString);
             });
 
-            services.AddControllersWithViews(options =>
+            services.AddControllers().AddNewtonsoftJson();
+
+
+            services.AddSwaggerGen(options =>
             {
-                options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
-            }).AddNewtonsoftJson();
+                options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+                {
+                    Title = "Sales API",
+                    Version = "v1"
+                });
+                options.DocInclusionPredicate((docName, description) => true);
+            });
+
 
             //Configure Abp and Dependency Injection
             return services.AddAbp<SalesWebModule>(options =>
@@ -55,6 +63,13 @@ namespace Sales.Web.Startup
             {
                 app.UseExceptionHandler("/Error");
             }
+
+            app.UseSwagger();
+            //Enable middleware to serve swagger - ui assets(HTML, JS, CSS etc.)
+            app.UseSwaggerUI(options =>
+            {
+                options.SwaggerEndpoint("/swagger/v1/swagger.json", "Sales API V1");
+            }); //URL: /swagger 
 
             app.UseStaticFiles();
             app.UseRouting();

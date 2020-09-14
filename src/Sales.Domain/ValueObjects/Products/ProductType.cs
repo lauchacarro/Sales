@@ -6,6 +6,15 @@ namespace Sales.Domain.ValueObjects.Products
 {
     public class ProductType : ValueObject
     {
+        public ProductType(ProductTypeValue type)
+        {
+            Type = type;
+        }
+
+        public ProductType()
+        {
+        }
+
         public enum ProductTypeValue
         {
             Sale,

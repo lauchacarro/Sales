@@ -2,7 +2,7 @@
 
 using Abp.Domain.Values;
 
-namespace Sales.Entities
+namespace Sales.Domain.ValueObjects
 {
     public class Currency : ValueObject
     {

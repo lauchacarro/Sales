@@ -3,7 +3,12 @@ using Abp.EntityFrameworkCore;
 
 using Microsoft.EntityFrameworkCore;
 
-using Sales.Entities;
+using Sales.Domain.Entities.Invoices;
+using Sales.Domain.Entities.Notifications;
+using Sales.Domain.Entities.Orders;
+using Sales.Domain.Entities.Plans;
+using Sales.Domain.Entities.Products;
+using Sales.Domain.Entities.Subscriptions;
 
 namespace Sales.EntityFrameworkCore
 {
