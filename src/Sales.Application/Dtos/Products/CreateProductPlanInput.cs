@@ -3,6 +3,7 @@
     public class CreateProductPlanInput
     {
         public string Name { get; set; }
+        public string Description { get; set; }
         public string PlanType { get; set; }
         public string Duration { get; set; }
 

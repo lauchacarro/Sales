@@ -13,13 +13,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sales.Core", "src\Sales.Cor
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sales.Application", "src\Sales.Application\Sales.Application.csproj", "{3870C648-4AEA-4B85-BA3F-F2F63B96136A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sales.EntityFrameworkCore", "src\Sales.EntityFrameworkCore\Sales.EntityFrameworkCore.csproj", "{DC780BC4-4EAC-4C63-9052-6F3169A59FA4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sales.Infrastructure", "src\Sales.EntityFrameworkCore\Sales.Infrastructure.csproj", "{DC780BC4-4EAC-4C63-9052-6F3169A59FA4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sales.Tests", "test\Sales.Tests\Sales.Tests.csproj", "{0D4C5D00-C144-4213-A007-4B8944113AB1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sales.Web.Tests", "test\Sales.Web.Tests\Sales.Web.Tests.csproj", "{5D441612-29CA-4DAD-9945-B9DE11CE026C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sales.Domain", "src\Sales.Domain\Sales.Domain.csproj", "{03F77026-15C1-470B-A1F5-5563B1E0FEEA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sales.Domain", "src\Sales.Domain\Sales.Domain.csproj", "{03F77026-15C1-470B-A1F5-5563B1E0FEEA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

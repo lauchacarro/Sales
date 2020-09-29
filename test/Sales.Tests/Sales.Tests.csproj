@@ -14,7 +14,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Sales.Application\Sales.Application.csproj" />
-    <ProjectReference Include="..\..\src\Sales.EntityFrameworkCore\Sales.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\src\Sales.EntityFrameworkCore\Sales.Infrastructure.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Castle.Core" Version="4.4.1" />

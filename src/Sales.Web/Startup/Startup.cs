@@ -13,6 +13,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 using Sales.EntityFrameworkCore;
+using Sales.Web.Extensions;
 
 namespace Sales.Web.Startup
 {
@@ -62,7 +63,11 @@ namespace Sales.Web.Startup
             else
             {
                 app.UseExceptionHandler("/Error");
+                app.UseHsts();
             }
+
+            app.UseHttpsRedirection();
+            app.UseCors(builder => builder.WithOrigins("*").AllowAnyHeader().AllowAnyMethod());
 
             app.UseSwagger();
             //Enable middleware to serve swagger - ui assets(HTML, JS, CSS etc.)
@@ -74,6 +79,7 @@ namespace Sales.Web.Startup
             app.UseStaticFiles();
             app.UseRouting();
 
+            app.UseRedirectToProxiedHttps();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");

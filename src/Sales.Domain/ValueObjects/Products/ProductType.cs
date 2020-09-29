@@ -1,9 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 
 using Abp.Domain.Values;
 
 namespace Sales.Domain.ValueObjects.Products
 {
+    [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
     public class ProductType : ValueObject
     {
         public ProductType(ProductTypeValue type)
@@ -25,6 +27,11 @@ namespace Sales.Domain.ValueObjects.Products
         protected override IEnumerable<object> GetAtomicValues()
         {
             yield return Type;
+        }
+
+        private string GetDebuggerDisplay()
+        {
+            return Type.ToString();
         }
     }
 }

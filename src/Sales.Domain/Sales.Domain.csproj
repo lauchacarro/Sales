@@ -15,5 +15,12 @@
   <ItemGroup>
     <PackageReference Include="Abp" Version="5.10.1" />
     <PackageReference Include="Abp.AutoMapper" Version="5.10.1" />
+
+    <PackageReference Include="PayPalCheckoutSdk" Version="1.0.3" />
+    <PackageReference Include="PayPalHttp" Version="1.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Sales.Core\Sales.Core.csproj" />
   </ItemGroup>
 </Project>

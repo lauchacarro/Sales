@@ -21,7 +21,7 @@ namespace Sales.Application.Validators
         {
             _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
 
-            RuleFor(x => x.Name).NotEmpty().Length(3, 10);
+            RuleFor(x => x.Name).NotEmpty().MinimumLength(3);
             RuleFor(x => x.Price).GreaterThanOrEqualTo(0);
             RuleFor(x => x.PlanType).IsEnumName(typeof(PlanType.PlanTypeValue), true);
             RuleFor(x => x.Duration).IsEnumName(typeof(PlanCycleDuration.PlanCycleDurationValue), true);

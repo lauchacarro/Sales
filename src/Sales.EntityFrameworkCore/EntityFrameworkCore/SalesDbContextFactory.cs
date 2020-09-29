@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 
 using Sales.Configuration;
+using Sales.Domain.Options;
 using Sales.Web;
 
 namespace Sales.EntityFrameworkCore
@@ -14,13 +15,15 @@ namespace Sales.EntityFrameworkCore
         {
             var builder = new DbContextOptionsBuilder<SalesDbContext>();
             var configuration = AppConfigurations.Get(WebContentDirectoryFinder.CalculateContentRootFolder());
+            var databaseOptoins = configuration.GetSection(nameof(DatabaseOptions)).Get<DatabaseOptions>();
+
 
             DbContextOptionsConfigurer.Configure(
                 builder,
                 configuration.GetConnectionString(SalesConsts.ConnectionStringName)
             );
 
-            return new SalesDbContext(builder.Options);
+            return new SalesDbContext(databaseOptoins, builder.Options);
         }
     }
 }

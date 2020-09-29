@@ -14,6 +14,7 @@ namespace Sales.Application.MapperProfiles.Products
         {
             CreateMap<CreateProductInput, Product>()
                       .ForMember(u => u.Name, options => options.MapFrom(input => input.Name))
+                      .ForMember(u => u.Description, options => options.MapFrom(input => input.Description))
                       .ForMember(u => u.Status, options => options.MapFrom(input => new ProductStatus(ProductStatus.ProductStatusValue.Created)))
                       .ForMember(u => u.Type, options => options.MapFrom(input => new ProductType(input.Type.ParseToEnum<ProductType.ProductTypeValue>())));
         }

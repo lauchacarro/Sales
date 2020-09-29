@@ -7,11 +7,11 @@ using Sales.Domain.ValueObjects.Invoices;
 
 namespace Sales.Domain.Entities.Invoices
 {
-    public class InvoceWebhook : Entity<Guid>, IHasCreationTime
+    public class InvoiceWebhook : Entity<Guid>, IHasCreationTime
     {
         public Guid InvocePaymentProviderId { get; set; }
         public DateTime CreationTime { get; set; }
-        public InvoceWebhookStatus Status { get; set; }
-        public virtual InvocePaymentProvider InvocePaymentProvider { get; set; }
+        public InvoiceWebhookStatus Status { get; set; }
+        public virtual InvoicePaymentProvider InvocePaymentProvider { get; set; }
     }
 }

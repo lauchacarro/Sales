@@ -2,14 +2,18 @@
 
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace Sales.Migrations
+namespace Sales.EntityFrameworkCore.Migrations
 {
-    public partial class v0001 : Migration
+    public partial class V0001 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.EnsureSchema(
+                name: "sale");
+
             migrationBuilder.CreateTable(
                 name: "Orders",
+                schema: "sale",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
@@ -28,23 +32,13 @@ namespace Sales.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "PaymentProviders",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(nullable: false),
-                    Name = table.Column<string>(unicode: false, maxLength: 255, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_PaymentProviders", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Products",
+                schema: "sale",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
                     Name = table.Column<string>(unicode: false, maxLength: 255, nullable: false),
+                    Description = table.Column<string>(nullable: true),
                     Status = table.Column<string>(nullable: true),
                     Type = table.Column<string>(nullable: true)
                 },
@@ -55,6 +49,7 @@ namespace Sales.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Invoices",
+                schema: "sale",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
@@ -69,6 +64,7 @@ namespace Sales.Migrations
                     table.ForeignKey(
                         name: "FK_Invoices_Orders_OrderId",
                         column: x => x.OrderId,
+                        principalSchema: "sale",
                         principalTable: "Orders",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -76,6 +72,7 @@ namespace Sales.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Notifications",
+                schema: "sale",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
@@ -89,6 +86,7 @@ namespace Sales.Migrations
                     table.ForeignKey(
                         name: "FK_Notifications_Orders_OrderId",
                         column: x => x.OrderId,
+                        principalSchema: "sale",
                         principalTable: "Orders",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -96,10 +94,13 @@ namespace Sales.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Plans",
+                schema: "sale",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
                     ProductId = table.Column<Guid>(unicode: false, maxLength: 50, nullable: false),
+                    Name = table.Column<string>(nullable: true),
+                    Description = table.Column<string>(nullable: true),
                     Status = table.Column<string>(nullable: true),
                     Type = table.Column<string>(nullable: true),
                     Duration = table.Column<string>(nullable: true)
@@ -110,6 +111,7 @@ namespace Sales.Migrations
                     table.ForeignKey(
                         name: "FK_Plans_Products_ProductId",
                         column: x => x.ProductId,
+                        principalSchema: "sale",
                         principalTable: "Products",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -117,6 +119,7 @@ namespace Sales.Migrations
 
             migrationBuilder.CreateTable(
                 name: "ProductSales",
+                schema: "sale",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
@@ -128,40 +131,38 @@ namespace Sales.Migrations
                     table.ForeignKey(
                         name: "FK_ProductSales_Products_ProductId",
                         column: x => x.ProductId,
+                        principalSchema: "sale",
                         principalTable: "Products",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
-                name: "InvocePaymentProviders",
+                name: "InvoicePaymentProviders",
+                schema: "sale",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
                     InvoceId = table.Column<Guid>(unicode: false, maxLength: 50, nullable: false),
-                    PaymentProviderId = table.Column<Guid>(unicode: false, maxLength: 50, nullable: false),
                     Transaction = table.Column<string>(unicode: false, maxLength: 255, nullable: false),
-                    Link = table.Column<string>(unicode: false, maxLength: 1, nullable: false)
+                    Link = table.Column<string>(unicode: false, maxLength: 5000, nullable: false),
+                    Provider = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_InvocePaymentProviders", x => x.Id);
+                    table.PrimaryKey("PK_InvoicePaymentProviders", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_InvocePaymentProviders_Invoices_InvoceId",
+                        name: "FK_InvoicePaymentProviders_Invoices_InvoceId",
                         column: x => x.InvoceId,
+                        principalSchema: "sale",
                         principalTable: "Invoices",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_InvocePaymentProviders_PaymentProviders_PaymentProviderId",
-                        column: x => x.PaymentProviderId,
-                        principalTable: "PaymentProviders",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
                 name: "PlanPrices",
+                schema: "sale",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
@@ -175,6 +176,7 @@ namespace Sales.Migrations
                     table.ForeignKey(
                         name: "FK_PlanPrices_Plans_PlanId",
                         column: x => x.PlanId,
+                        principalSchema: "sale",
                         principalTable: "Plans",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -182,6 +184,7 @@ namespace Sales.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Subscriptions",
+                schema: "sale",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
@@ -195,6 +198,7 @@ namespace Sales.Migrations
                     table.ForeignKey(
                         name: "FK_Subscriptions_Plans_PlanId",
                         column: x => x.PlanId,
+                        principalSchema: "sale",
                         principalTable: "Plans",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -202,6 +206,7 @@ namespace Sales.Migrations
 
             migrationBuilder.CreateTable(
                 name: "ProductSaleOrders",
+                schema: "sale",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
@@ -215,12 +220,14 @@ namespace Sales.Migrations
                     table.ForeignKey(
                         name: "FK_ProductSaleOrders_Orders_OrderId",
                         column: x => x.OrderId,
+                        principalSchema: "sale",
                         principalTable: "Orders",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_ProductSaleOrders_ProductSales_ProductSaleId",
                         column: x => x.ProductSaleId,
+                        principalSchema: "sale",
                         principalTable: "ProductSales",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -228,6 +235,7 @@ namespace Sales.Migrations
 
             migrationBuilder.CreateTable(
                 name: "ProductSalePrices",
+                schema: "sale",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
@@ -241,13 +249,15 @@ namespace Sales.Migrations
                     table.ForeignKey(
                         name: "FK_ProductSalePrices_ProductSales_ProductSaleId",
                         column: x => x.ProductSaleId,
+                        principalSchema: "sale",
                         principalTable: "ProductSales",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
-                name: "InvoceWebhooks",
+                name: "InvoiceWebhooks",
+                schema: "sale",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
@@ -257,17 +267,19 @@ namespace Sales.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_InvoceWebhooks", x => x.Id);
+                    table.PrimaryKey("PK_InvoiceWebhooks", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_InvoceWebhooks_InvocePaymentProviders_InvocePaymentProviderId",
+                        name: "FK_InvoiceWebhooks_InvoicePaymentProviders_InvocePaymentProviderId",
                         column: x => x.InvocePaymentProviderId,
-                        principalTable: "InvocePaymentProviders",
+                        principalSchema: "sale",
+                        principalTable: "InvoicePaymentProviders",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
                 name: "SubscriptionCycles",
+                schema: "sale",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
@@ -283,6 +295,7 @@ namespace Sales.Migrations
                     table.ForeignKey(
                         name: "FK_SubscriptionCycles_Subscriptions_SubscriptionId",
                         column: x => x.SubscriptionId,
+                        principalSchema: "sale",
                         principalTable: "Subscriptions",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -290,6 +303,7 @@ namespace Sales.Migrations
 
             migrationBuilder.CreateTable(
                 name: "SubscriptionCycleOrders",
+                schema: "sale",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
@@ -302,113 +316,121 @@ namespace Sales.Migrations
                     table.ForeignKey(
                         name: "FK_SubscriptionCycleOrders_Orders_OrderId",
                         column: x => x.OrderId,
+                        principalSchema: "sale",
                         principalTable: "Orders",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_SubscriptionCycleOrders_SubscriptionCycles_SubscriptionCycleId",
                         column: x => x.SubscriptionCycleId,
+                        principalSchema: "sale",
                         principalTable: "SubscriptionCycles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_InvocePaymentProviders_InvoceId",
-                table: "InvocePaymentProviders",
+                name: "IX_InvoicePaymentProviders_InvoceId",
+                schema: "sale",
+                table: "InvoicePaymentProviders",
                 column: "InvoceId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_InvocePaymentProviders_Link",
-                table: "InvocePaymentProviders",
+                name: "IX_InvoicePaymentProviders_Link",
+                schema: "sale",
+                table: "InvoicePaymentProviders",
                 column: "Link",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_InvocePaymentProviders_PaymentProviderId",
-                table: "InvocePaymentProviders",
-                column: "PaymentProviderId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_InvocePaymentProviders_Transaction",
-                table: "InvocePaymentProviders",
+                name: "IX_InvoicePaymentProviders_Transaction",
+                schema: "sale",
+                table: "InvoicePaymentProviders",
                 column: "Transaction",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_InvoceWebhooks_InvocePaymentProviderId",
-                table: "InvoceWebhooks",
-                column: "InvocePaymentProviderId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Invoices_OrderId",
+                schema: "sale",
                 table: "Invoices",
                 column: "OrderId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_InvoiceWebhooks_InvocePaymentProviderId",
+                schema: "sale",
+                table: "InvoiceWebhooks",
+                column: "InvocePaymentProviderId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Notifications_OrderId",
+                schema: "sale",
                 table: "Notifications",
                 column: "OrderId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_PaymentProviders_Name",
-                table: "PaymentProviders",
-                column: "Name",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
                 name: "IX_PlanPrices_PlanId",
+                schema: "sale",
                 table: "PlanPrices",
                 column: "PlanId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Plans_ProductId",
+                schema: "sale",
                 table: "Plans",
                 column: "ProductId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Products_Name",
+                schema: "sale",
                 table: "Products",
                 column: "Name",
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProductSaleOrders_OrderId",
+                schema: "sale",
                 table: "ProductSaleOrders",
                 column: "OrderId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProductSaleOrders_ProductSaleId",
+                schema: "sale",
                 table: "ProductSaleOrders",
                 column: "ProductSaleId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProductSalePrices_ProductSaleId",
+                schema: "sale",
                 table: "ProductSalePrices",
                 column: "ProductSaleId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProductSales_ProductId",
+                schema: "sale",
                 table: "ProductSales",
                 column: "ProductId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_SubscriptionCycleOrders_OrderId",
+                schema: "sale",
                 table: "SubscriptionCycleOrders",
                 column: "OrderId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_SubscriptionCycleOrders_SubscriptionCycleId",
+                schema: "sale",
                 table: "SubscriptionCycleOrders",
                 column: "SubscriptionCycleId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_SubscriptionCycles_SubscriptionId",
+                schema: "sale",
                 table: "SubscriptionCycles",
                 column: "SubscriptionId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Subscriptions_PlanId",
+                schema: "sale",
                 table: "Subscriptions",
                 column: "PlanId");
         }
@@ -416,49 +438,60 @@ namespace Sales.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "InvoceWebhooks");
+                name: "InvoiceWebhooks",
+                schema: "sale");
 
             migrationBuilder.DropTable(
-                name: "Notifications");
+                name: "Notifications",
+                schema: "sale");
 
             migrationBuilder.DropTable(
-                name: "PlanPrices");
+                name: "PlanPrices",
+                schema: "sale");
 
             migrationBuilder.DropTable(
-                name: "ProductSaleOrders");
+                name: "ProductSaleOrders",
+                schema: "sale");
 
             migrationBuilder.DropTable(
-                name: "ProductSalePrices");
+                name: "ProductSalePrices",
+                schema: "sale");
 
             migrationBuilder.DropTable(
-                name: "SubscriptionCycleOrders");
+                name: "SubscriptionCycleOrders",
+                schema: "sale");
 
             migrationBuilder.DropTable(
-                name: "InvocePaymentProviders");
+                name: "InvoicePaymentProviders",
+                schema: "sale");
 
             migrationBuilder.DropTable(
-                name: "ProductSales");
+                name: "ProductSales",
+                schema: "sale");
 
             migrationBuilder.DropTable(
-                name: "SubscriptionCycles");
+                name: "SubscriptionCycles",
+                schema: "sale");
 
             migrationBuilder.DropTable(
-                name: "Invoices");
+                name: "Invoices",
+                schema: "sale");
 
             migrationBuilder.DropTable(
-                name: "PaymentProviders");
+                name: "Subscriptions",
+                schema: "sale");
 
             migrationBuilder.DropTable(
-                name: "Subscriptions");
+                name: "Orders",
+                schema: "sale");
 
             migrationBuilder.DropTable(
-                name: "Orders");
+                name: "Plans",
+                schema: "sale");
 
             migrationBuilder.DropTable(
-                name: "Plans");
-
-            migrationBuilder.DropTable(
-                name: "Products");
+                name: "Products",
+                schema: "sale");
         }
     }
 }

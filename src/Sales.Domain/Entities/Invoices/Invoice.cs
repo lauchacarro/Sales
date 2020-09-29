@@ -12,7 +12,7 @@ namespace Sales.Domain.Entities.Invoices
     {
         public Invoice()
         {
-            InvocePaymentProviders = new HashSet<InvocePaymentProvider>();
+            InvocePaymentProviders = new HashSet<InvoicePaymentProvider>();
         }
 
         public DateTime ExpirationDate { get; set; }
@@ -21,6 +21,6 @@ namespace Sales.Domain.Entities.Invoices
         public virtual Order Order { get; set; }
         public InvoiceStatus Status { get; set; }
         public InvoiceType Type { get; set; }
-        public virtual ICollection<InvocePaymentProvider> InvocePaymentProviders { get; set; }
+        public virtual ICollection<InvoicePaymentProvider> InvocePaymentProviders { get; set; }
     }
 }

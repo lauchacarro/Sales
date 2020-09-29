@@ -4,7 +4,6 @@ using Abp.Application.Services.Dto;
 using Abp.AutoMapper;
 
 using Sales.Domain.Entities.Products;
-using Sales.Domain.ValueObjects.Products;
 
 namespace Sales.Application.Dtos.Products
 {
@@ -12,7 +11,8 @@ namespace Sales.Application.Dtos.Products
     public class ProductDto : EntityDto<Guid>
     {
         public string Name { get; set; }
-        public ProductStatus Status { get; set; }
-        public ProductType Type { get; set; }
+        public string Description { get; set; }
+        public string Status { get; set; }
+        public string Type { get; set; }
     }
 }

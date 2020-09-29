@@ -5,20 +5,18 @@ using Abp.Domain.Entities;
 
 namespace Sales.Domain.Entities.Invoices
 {
-    public class InvocePaymentProvider : Entity<Guid>
+    public class InvoicePaymentProvider : Entity<Guid>
     {
-        public InvocePaymentProvider()
+        public InvoicePaymentProvider()
         {
-            InvoceWebhooks = new HashSet<InvoceWebhook>();
+            InvoceWebhooks = new HashSet<InvoiceWebhook>();
         }
 
         public Guid InvoceId { get; set; }
-        public Guid PaymentProviderId { get; set; }
         public string Transaction { get; set; }
-        public string Link { get; set; }
-
+        public Uri Link { get; set; }
+        public PaymentProvider PaymentProvider { get; set; }
         public virtual Invoice Invoce { get; set; }
-        public virtual PaymentProvider PaymentProvider { get; set; }
-        public virtual ICollection<InvoceWebhook> InvoceWebhooks { get; set; }
+        public virtual ICollection<InvoiceWebhook> InvoceWebhooks { get; set; }
     }
 }

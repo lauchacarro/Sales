@@ -1,4 +1,6 @@
 ﻿
+using System;
+
 using Abp.EntityFrameworkCore;
 
 using Microsoft.EntityFrameworkCore;
@@ -9,22 +11,24 @@ using Sales.Domain.Entities.Orders;
 using Sales.Domain.Entities.Plans;
 using Sales.Domain.Entities.Products;
 using Sales.Domain.Entities.Subscriptions;
+using Sales.Domain.Options;
 
 namespace Sales.EntityFrameworkCore
 {
     public partial class SalesDbContext : AbpDbContext
     {
-        public SalesDbContext(DbContextOptions<SalesDbContext> options)
+        private readonly IDatabaseOptions _databaseOptions;
+        public SalesDbContext(IDatabaseOptions databaseOptions, DbContextOptions<SalesDbContext> options)
             : base(options)
         {
+            _databaseOptions = databaseOptions;
         }
 
-        public virtual DbSet<InvocePaymentProvider> InvocePaymentProviders { get; set; }
-        public virtual DbSet<InvoceWebhook> InvoceWebhooks { get; set; }
+        public virtual DbSet<InvoicePaymentProvider> InvoicePaymentProviders { get; set; }
+        public virtual DbSet<InvoiceWebhook> InvoiceWebhooks { get; set; }
         public virtual DbSet<Invoice> Invoices { get; set; }
         public virtual DbSet<Notification> Notifications { get; set; }
         public virtual DbSet<Order> Orders { get; set; }
-        public virtual DbSet<PaymentProvider> PaymentProviders { get; set; }
         public virtual DbSet<PlanPrice> PlanPrices { get; set; }
         public virtual DbSet<Plan> Plans { get; set; }
         public virtual DbSet<ProductSaleOrder> ProductSaleOrders { get; set; }
@@ -37,7 +41,10 @@ namespace Sales.EntityFrameworkCore
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<InvocePaymentProvider>(entity =>
+            modelBuilder.HasDefaultSchema(_databaseOptions.Schema);
+
+
+            modelBuilder.Entity<InvoicePaymentProvider>(entity =>
             {
                 entity.HasIndex(e => e.Link)
                     .IsUnique();
@@ -54,12 +61,8 @@ namespace Sales.EntityFrameworkCore
 
                 entity.Property(e => e.Link)
                     .IsRequired()
-                    .HasMaxLength(1)
-                    .IsUnicode(false);
-
-                entity.Property(e => e.PaymentProviderId)
-                    .IsRequired()
-                    .HasMaxLength(50)
+                    .HasMaxLength(5000)
+                    .HasConversion(v => v.ToString(), v => new Uri(v))
                     .IsUnicode(false);
 
                 entity.Property(e => e.Transaction)
@@ -72,14 +75,14 @@ namespace Sales.EntityFrameworkCore
                     .HasForeignKey(d => d.InvoceId)
                     .OnDelete(DeleteBehavior.ClientSetNull);
 
-                entity.HasOne(d => d.PaymentProvider)
-                    .WithMany(p => p.InvocePaymentProviders)
-                    .HasForeignKey(d => d.PaymentProviderId)
-                    .OnDelete(DeleteBehavior.ClientSetNull);
+                entity.OwnsOne(d => d.PaymentProvider, st =>
+                 {
+                     st.Property(e => e.Provider).HasConversion<string>().IsRequired().HasColumnName(nameof(PaymentProvider.Provider));
+                 });
             });
 
 
-            modelBuilder.Entity<InvoceWebhook>(entity =>
+            modelBuilder.Entity<InvoiceWebhook>(entity =>
             {
                 entity.HasKey(p => p.Id);
 
@@ -97,7 +100,7 @@ namespace Sales.EntityFrameworkCore
 
                 entity.OwnsOne(d => d.Status, st =>
                 {
-                    st.Property(e => e.Status).HasConversion<string>().IsRequired().HasColumnName(nameof(InvoceWebhook.Status));
+                    st.Property(e => e.Status).HasConversion<string>().IsRequired().HasColumnName(nameof(InvoiceWebhook.Status));
                 });
             });
 
@@ -178,19 +181,6 @@ namespace Sales.EntityFrameworkCore
                 entity.Property(e => e.UserId)
                     .IsRequired()
                     .HasMaxLength(50)
-                    .IsUnicode(false);
-            });
-
-            modelBuilder.Entity<PaymentProvider>(entity =>
-            {
-                entity.HasIndex(e => e.Name)
-                    .IsUnique();
-
-                entity.HasKey(p => p.Id);
-
-                entity.Property(e => e.Name)
-                    .IsRequired()
-                    .HasMaxLength(255)
                     .IsUnicode(false);
             });
 

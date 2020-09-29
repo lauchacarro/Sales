@@ -1,9 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 
 using Abp.Domain.Values;
 
 namespace Sales.Domain.ValueObjects.Products
 {
+    [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
     public class ProductStatus : ValueObject
     {
         public ProductStatus(ProductStatusValue status)
@@ -26,6 +28,11 @@ namespace Sales.Domain.ValueObjects.Products
         protected override IEnumerable<object> GetAtomicValues()
         {
             yield return Status;
+        }
+
+        private string GetDebuggerDisplay()
+        {
+            return Status.ToString();
         }
     }
 }

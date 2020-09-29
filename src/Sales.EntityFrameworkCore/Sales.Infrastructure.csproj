@@ -12,7 +12,7 @@
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
-    <RootNamespace>Sales</RootNamespace>
+    <RootNamespace>Sales.EntityFrameworkCore</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Migrations\**" />
@@ -20,15 +20,13 @@
     <None Remove="Migrations\**" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Migrations\20200913224041_v0001.cs" />
-    <Compile Include="Migrations\20200913224041_v0001.Designer.cs" />
+    <Compile Include="Migrations\20200920064320_V0001.cs" />
+    <Compile Include="Migrations\20200920064320_V0001.Designer.cs" />
     <Compile Include="Migrations\SalesDbContextModelSnapshot.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Sales.Core\Sales.Core.csproj" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="Abp.EntityFrameworkCore" Version="5.12.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Analyzers" Version="3.1.8" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="3.1.5">
       <PrivateAssets>all</PrivateAssets>
@@ -40,8 +38,13 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Http" Version="3.1.8" />
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
   </ItemGroup>
   <ItemGroup>
     <DotNetCliToolReference Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Version="2.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Sales.Domain\Sales.Domain.csproj" />
   </ItemGroup>
 </Project>

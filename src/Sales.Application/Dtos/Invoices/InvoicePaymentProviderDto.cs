@@ -7,12 +7,12 @@ using Sales.Domain.Entities.Invoices;
 
 namespace Sales.Application.Dtos.Invoices
 {
-    [AutoMap(typeof(InvocePaymentProvider))]
+    [AutoMap(typeof(InvoicePaymentProvider))]
     public class InvoicePaymentProviderDto : EntityDto<Guid>
     {
         public Guid InvoceId { get; set; }
-        public Guid PaymentProviderId { get; set; }
         public string Transaction { get; set; }
-        public string Link { get; set; }
+        public Uri Link { get; set; }
+        public string PaymentProvider { get; set; }
     }
 }
