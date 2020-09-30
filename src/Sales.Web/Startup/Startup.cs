@@ -2,7 +2,6 @@
 
 using Abp.AspNetCore;
 using Abp.Castle.Logging.Log4Net;
-using Abp.EntityFrameworkCore;
 
 using Castle.Facilities.Logging;
 
@@ -12,7 +11,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-using Sales.EntityFrameworkCore;
 using Sales.Web.Extensions;
 
 namespace Sales.Web.Startup
@@ -21,12 +19,6 @@ namespace Sales.Web.Startup
     {
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
-            //Configure DbContext
-            services.AddAbpDbContext<SalesDbContext>(options =>
-            {
-                DbContextOptionsConfigurer.Configure(options.DbContextOptions, options.ConnectionString);
-            });
-
             services.AddControllers().AddNewtonsoftJson();
 
 

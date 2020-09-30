@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 
 using Sales.Configuration;
 using Sales.Domain.Options;
+using Sales.EntityFrameworkCore.EntityFrameworkCore;
 using Sales.Web;
 
 namespace Sales.EntityFrameworkCore
@@ -18,7 +19,7 @@ namespace Sales.EntityFrameworkCore
             var databaseOptoins = configuration.GetSection(nameof(DatabaseOptions)).Get<DatabaseOptions>();
 
 
-            DbContextOptionsConfigurer.Configure(
+            SalesDbContextConfigurer.Configure(
                 builder,
                 configuration.GetConnectionString(SalesConsts.ConnectionStringName)
             );
