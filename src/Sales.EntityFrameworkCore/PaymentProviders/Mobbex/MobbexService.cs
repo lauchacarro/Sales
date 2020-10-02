@@ -1,6 +1,8 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 
+using PayPalHttp;
+
 using Sales.Domain.Entities.Invoices;
 using Sales.Domain.Entities.Orders;
 using Sales.Domain.Entities.Plans;
@@ -31,7 +33,7 @@ namespace Sales.EntityFrameworkCore.PaymentProviders.Mobbex
 
         public async Task<InvoicePaymentProvider> CreateUriForPayment(Invoice invoice, Order order, Plan plan)
         {
-            PlanPrice price = plan.PlanPrices.Single(x => x.Currency.Code == Domain.ValueObjects.Currency.CurrencyValue.ARS);
+            PlanPrice price = plan.PlanPrices.Single(x => x.Currency.Code == Currency.CurrencyValue.ARS);
             var contract = new CheckoutCreateContract
             {
                 Total = price.Price,
@@ -39,8 +41,8 @@ namespace Sales.EntityFrameworkCore.PaymentProviders.Mobbex
                 Reference = invoice.Id.ToString(),
                 Description = plan.Description,
                 ReturnUrl = _mobbexOptions.ReturnUrl + "?invoiceId=" + invoice.Id,
-                Webhook = _mobbexOptions.CancelUrl,
-                Test = false,
+                Webhook = _mobbexOptions.WebhookUrl + "?invoiceId=" + invoice.Id,
+                Test = _mobbexOptions.Environment == Domain.Enums.PaymentProviderEnvironment.Sandbox,
                 Options = new SubscriptionOptionsDto()
             };
 

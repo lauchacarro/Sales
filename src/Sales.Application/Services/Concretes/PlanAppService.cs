@@ -80,6 +80,15 @@ namespace Sales.Application.Services.Concretes
             });
         }
 
+        public PlanPriceDto GetByOrder(Guid orderId)
+        {
+            PlanPrice planprice = _planPriceRepository.GetByOrder(orderId);
+
+            PlanPriceDto planDto = _mapper.Map<PlanPriceDto>(planprice);
+
+            return planDto;
+        }
+
         public IEnumerable<PlanDto> GetAllPlans()
         {
             return _planRepository.GetAll().AsNoTracking()

@@ -102,27 +102,31 @@ namespace Sales.Application.Services.Concretes
             {
                 Invoice invoice = _invoiceRepository.GetAllIncluding(x => x.Order).Single(x => x.Id == invoicePaymentProvider.InvoceId);
 
-                _invoiceDomainService.PayInvoice(invoice);
-                _orderDomainService.PayOrder(invoice.Order);
-
-                _invoiceRepository.Update(invoice);
-
-                if (invoice.Order.Type.Type == OrderType.OrderTypeValue.Subscription)
+                if (invoice.Order.Status.Status == OrderStatus.OrderStatusValue.PaymentPending)
                 {
-                    SubscriptionCycleOrder subsubscriptionCycleOrder = _subscriptionCycleOrderRepository.GetAll().Single(x => x.OrderId == invoice.Order.Id);
 
-                    SubscriptionCycle subsubscriptionCycle = _subscriptionCycleRepository.Get(subsubscriptionCycleOrder.SubscriptionCycleId);
+                    _invoiceDomainService.PayInvoice(invoice);
+                    _orderDomainService.PayOrder(invoice.Order);
 
-                    Subscription subsubscription = _subscriptionRepository.Get(subsubscriptionCycle.SubscriptionId);
+                    _invoiceRepository.Update(invoice);
 
-                    Plan plan = _planRepository.Get(subsubscription.PlanId);
+                    if (invoice.Order.Type.Type == OrderType.OrderTypeValue.Subscription)
+                    {
+                        SubscriptionCycleOrder subsubscriptionCycleOrder = _subscriptionCycleOrderRepository.GetAll().Single(x => x.OrderId == invoice.Order.Id);
 
-                    _subscriptionCycleDomainService.ActiveSubscriptionCycle(subsubscriptionCycle, DateTime.Now, plan.Duration);
-                    _subscriptionCycleRepository.Update(subsubscriptionCycle);
+                        SubscriptionCycle subsubscriptionCycle = _subscriptionCycleRepository.Get(subsubscriptionCycleOrder.SubscriptionCycleId);
 
-                    Notification notification = _notificationDomainService.CreateNotification(invoice.Order);
-                    _notificationDomainService.SetOrderPayed(notification);
-                    _noticationRepository.Insert(notification);
+                        Subscription subsubscription = _subscriptionRepository.Get(subsubscriptionCycle.SubscriptionId);
+
+                        Plan plan = _planRepository.Get(subsubscription.PlanId);
+
+                        _subscriptionCycleDomainService.ActiveSubscriptionCycle(subsubscriptionCycle, DateTime.Now, plan.Duration);
+                        _subscriptionCycleRepository.Update(subsubscriptionCycle);
+
+                        Notification notification = _notificationDomainService.CreateNotification(invoice.Order);
+                        _notificationDomainService.SetOrderPayed(notification);
+                        _noticationRepository.Insert(notification);
+                    }
                 }
             }
             catch (Exception)

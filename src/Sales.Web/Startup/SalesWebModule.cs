@@ -39,7 +39,7 @@ namespace Sales.Web.Startup
             Configuration.Get<IMobbexOptions>().ClientSecret = _appConfiguration.GetSection(nameof(MobbexOptions)).Get<MobbexOptions>().ClientSecret;
             Configuration.Get<IMobbexOptions>().Environment = _appConfiguration.GetSection(nameof(MobbexOptions)).Get<MobbexOptions>().Environment;
             Configuration.Get<IMobbexOptions>().ReturnUrl = _appConfiguration.GetSection(nameof(MobbexOptions)).Get<MobbexOptions>().ReturnUrl;
-            Configuration.Get<IMobbexOptions>().CancelUrl = _appConfiguration.GetSection(nameof(MobbexOptions)).Get<MobbexOptions>().CancelUrl;
+            Configuration.Get<IMobbexOptions>().WebhookUrl = _appConfiguration.GetSection(nameof(MobbexOptions)).Get<MobbexOptions>().WebhookUrl;
 
             IocManager.Register<IPaypalOptions, PaypalOptions>();
             Configuration.Get<IPaypalOptions>().ClientId = _appConfiguration.GetSection(nameof(PaypalOptions)).Get<PaypalOptions>().ClientId;

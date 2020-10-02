@@ -12,5 +12,6 @@ namespace Sales.Domain.Options
         public PaymentProviderEnvironment Environment { get; set; }
         public string ReturnUrl { get; set; }
         public string CancelUrl { get; set; }
+        public string WebhookUrl { get; set; }
     }
 }

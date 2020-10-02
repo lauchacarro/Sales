@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 using Sales.Application.Services.Abstracts;
 using Sales.Domain.Options;
+using Sales.EntityFrameworkCore.PaymentProviders.Mobbex.Models;
 
 namespace Sales.Web.Controllers
 {
@@ -33,7 +34,6 @@ namespace Sales.Web.Controllers
         [HttpGet]
         public IActionResult WebhookReturnMobbex([FromQuery] Guid invoiceId, [FromQuery] int status, [FromQuery] string transactionId)
         {
-            _invoiceWebhookAppService.WebhookMobbex(invoiceId, status, transactionId);
             return Redirect(_clientOptions.WebhookReturnUrl);
         }
 
@@ -46,6 +46,17 @@ namespace Sales.Web.Controllers
         [HttpGet]
         public IActionResult WebhookCancelMobbex([FromQuery] string token)
         {
+            return Redirect(_clientOptions.WebhookReturnUrl);
+        }
+
+        [HttpPost]
+        public IActionResult WebhookNotificationMobbex([FromQuery] Guid invoiceId, [FromForm] MobbexWebhookModel webhook)
+        {
+            if(webhook.Data?.Payment?.Status?.Code == "200" && webhook.Type == "checkout")
+            {
+                _invoiceWebhookAppService.WebhookMobbex(invoiceId, int.Parse(webhook.Data.Payment.Status.Code), webhook.Data.Payment.Id);
+            }
+
             return Redirect(_clientOptions.WebhookReturnUrl);
         }
     }
