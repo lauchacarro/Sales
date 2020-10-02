@@ -74,7 +74,8 @@ namespace Sales.Application.Services.Concretes
             _notificationDomainService = notificationDomainService ?? throw new ArgumentNullException(nameof(notificationDomainService));
         }
 
-        [HttpGet]
+        [RemoteService(false)]
+
         public async Task WebhookPaypal([FromQuery] string token)
         {
             Guid invoiceId = await _paypalService.ConfirmOrder(token);
@@ -82,7 +83,8 @@ namespace Sales.Application.Services.Concretes
             PayOrder(invoicePaymentProvider);
         }
 
-        [HttpGet]
+        [RemoteService(false)]
+
         public void WebhookMobbex([FromQuery] Guid invoiceId, [FromQuery] int status, [FromQuery] string transactionId)
         {
             if (status == 200)
@@ -118,7 +120,7 @@ namespace Sales.Application.Services.Concretes
                     _subscriptionCycleDomainService.ActiveSubscriptionCycle(subsubscriptionCycle, DateTime.Now, plan.Duration);
                     _subscriptionCycleRepository.Update(subsubscriptionCycle);
 
-                    var notification = _notificationDomainService.CreateNotification(invoice.Order);
+                    Notification notification = _notificationDomainService.CreateNotification(invoice.Order);
                     _notificationDomainService.SetOrderPayed(notification);
                     _noticationRepository.Insert(notification);
                 }

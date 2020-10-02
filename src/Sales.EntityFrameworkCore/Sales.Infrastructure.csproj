@@ -22,6 +22,8 @@
   <ItemGroup>
     <Compile Include="Migrations\20200920064320_V0001.cs" />
     <Compile Include="Migrations\20200920064320_V0001.Designer.cs" />
+    <Compile Include="Migrations\20201002001046_V0002.cs" />
+    <Compile Include="Migrations\20201002001046_V0002.Designer.cs" />
     <Compile Include="Migrations\SalesDbContextModelSnapshot.cs" />
   </ItemGroup>
   <ItemGroup>

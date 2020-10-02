@@ -22,15 +22,11 @@ namespace Sales.EntityFrameworkCore.EntityFrameworkCore
         private static void WithDbContext<TDbContext>(IIocResolver iocResolver, Action<TDbContext> contextAction)
             where TDbContext : Microsoft.EntityFrameworkCore.DbContext
         {
-            using (var uowManager = iocResolver.ResolveAsDisposable<IUnitOfWorkManager>())
-            {
-                using (var uow = uowManager.Object.Begin(TransactionScopeOption.Suppress))
-                {
-                    var context = uowManager.Object.Current.GetDbContext<TDbContext>();
-                    contextAction(context);
-                    uow.Complete();
-                }
-            }
+            using var uowManager = iocResolver.ResolveAsDisposable<IUnitOfWorkManager>();
+            using var uow = uowManager.Object.Begin(TransactionScopeOption.Suppress);
+            var context = uowManager.Object.Current.GetDbContext<TDbContext>();
+            contextAction(context);
+            uow.Complete();
         }
     }
 }

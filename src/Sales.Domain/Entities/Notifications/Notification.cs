@@ -13,6 +13,7 @@ namespace Sales.Domain.Entities.Notifications
         public int Attempts { get; set; }
 
         public NotificationType Type { get; set; }
+        public NotificationStatus Status { get; set; }
         public virtual Order Order { get; set; }
     }
 }

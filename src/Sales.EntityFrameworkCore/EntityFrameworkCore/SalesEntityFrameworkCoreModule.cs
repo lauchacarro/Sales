@@ -4,6 +4,7 @@ using Abp.Modules;
 using Abp.Reflection.Extensions;
 
 using Sales.Domain;
+using Sales.Domain.Options;
 using Sales.EntityFrameworkCore.EntityFrameworkCore;
 
 namespace Sales.EntityFrameworkCore
@@ -16,6 +17,7 @@ namespace Sales.EntityFrameworkCore
     {
         /* Used it tests to skip dbcontext registration, in order to use in-memory database of EF Core */
         public bool SkipDbContextRegistration { get; set; }
+        public bool SkipSeed { get; set; }
 
         public override void PreInitialize()
         {
@@ -42,7 +44,11 @@ namespace Sales.EntityFrameworkCore
 
         public override void PostInitialize()
         {
-            SeedHelper.SeedHostDb(IocManager);
+            SkipSeed = Configuration.Get<IDatabaseOptions>().SkipSeed;
+            if (!SkipSeed)
+            {
+                SeedHelper.SeedHostDb(IocManager);
+            }
         }
     }
 }

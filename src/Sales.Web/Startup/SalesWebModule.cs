@@ -21,7 +21,7 @@ namespace Sales.Web.Startup
     {
         private readonly IConfigurationRoot _appConfiguration;
 
-        public SalesWebModule(IHostingEnvironment env)
+        public SalesWebModule(IWebHostEnvironment env)
         {
             _appConfiguration = AppConfigurations.Get(env.ContentRootPath, env.EnvironmentName);
         }
@@ -32,9 +32,7 @@ namespace Sales.Web.Startup
 
             IocManager.Register<IDatabaseOptions, DatabaseOptions>();
             Configuration.Get<IDatabaseOptions>().Schema = _appConfiguration.GetSection(nameof(DatabaseOptions)).Get<DatabaseOptions>().Schema;
-
-            IocManager.Register<INotificationOptions, NotificationOptions>();
-            Configuration.Get<INotificationOptions>().Url = _appConfiguration.GetSection(nameof(NotificationOptions)).Get<NotificationOptions>().Url;
+            Configuration.Get<IDatabaseOptions>().SkipSeed = _appConfiguration.GetSection(nameof(DatabaseOptions)).Get<DatabaseOptions>().SkipSeed;
 
             IocManager.Register<IMobbexOptions, MobbexOptions>();
             Configuration.Get<IMobbexOptions>().ClientId = _appConfiguration.GetSection(nameof(MobbexOptions)).Get<MobbexOptions>().ClientId;
@@ -49,6 +47,12 @@ namespace Sales.Web.Startup
             Configuration.Get<IPaypalOptions>().Environment = _appConfiguration.GetSection(nameof(PaypalOptions)).Get<PaypalOptions>().Environment;
             Configuration.Get<IPaypalOptions>().ReturnUrl = _appConfiguration.GetSection(nameof(PaypalOptions)).Get<PaypalOptions>().ReturnUrl;
             Configuration.Get<IPaypalOptions>().CancelUrl = _appConfiguration.GetSection(nameof(PaypalOptions)).Get<PaypalOptions>().CancelUrl;
+
+            IocManager.Register<IClientOptions, ClientOptions>();
+            Configuration.Get<IClientOptions>().NotificactionUrl = _appConfiguration.GetSection(nameof(ClientOptions)).Get<ClientOptions>().NotificactionUrl;
+            Configuration.Get<IClientOptions>().WebhookCancelUrl = _appConfiguration.GetSection(nameof(ClientOptions)).Get<ClientOptions>().WebhookCancelUrl;
+            Configuration.Get<IClientOptions>().WebhookReturnUrl = _appConfiguration.GetSection(nameof(ClientOptions)).Get<ClientOptions>().WebhookReturnUrl;
+
 
             Configuration.Modules.AbpAspNetCore()
                 .CreateControllersForAppServices(

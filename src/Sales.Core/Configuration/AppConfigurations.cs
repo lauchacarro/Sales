@@ -8,12 +8,7 @@ namespace Sales.Configuration
 {
     public static class AppConfigurations
     {
-        private static readonly ConcurrentDictionary<string, IConfigurationRoot> ConfigurationCache;
-
-        static AppConfigurations()
-        {
-            ConfigurationCache = new ConcurrentDictionary<string, IConfigurationRoot>();
-        }
+        private static readonly ConcurrentDictionary<string, IConfigurationRoot> ConfigurationCache = new ConcurrentDictionary<string, IConfigurationRoot>();
 
         public static IConfigurationRoot Get(string path, string environmentName = null)
         {
@@ -28,11 +23,13 @@ namespace Sales.Configuration
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(path)
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile("clientconfig.json", optional: false, reloadOnChange: true);
 
             if (!environmentName.IsNullOrWhiteSpace())
             {
                 builder = builder.AddJsonFile($"appsettings.{environmentName}.json", optional: true);
+                builder = builder.AddJsonFile($"clientconfig.{environmentName}.json", optional: true);
             }
 
             builder = builder.AddEnvironmentVariables();

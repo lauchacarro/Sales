@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 
@@ -15,7 +17,7 @@ namespace Sales.EntityFrameworkCore
         public SalesDbContext CreateDbContext(string[] args)
         {
             var builder = new DbContextOptionsBuilder<SalesDbContext>();
-            var configuration = AppConfigurations.Get(WebContentDirectoryFinder.CalculateContentRootFolder());
+            var configuration = AppConfigurations.Get(WebContentDirectoryFinder.CalculateContentRootFolder(), Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT"));
             var databaseOptoins = configuration.GetSection(nameof(DatabaseOptions)).Get<DatabaseOptions>();
 
 

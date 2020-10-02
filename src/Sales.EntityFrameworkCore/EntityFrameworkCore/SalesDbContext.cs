@@ -146,6 +146,11 @@ namespace Sales.EntityFrameworkCore
                     t.Property(e => e.Type).HasConversion<string>().IsRequired().HasColumnName(nameof(Notification.Type));
                 });
 
+                entity.OwnsOne(s => s.Status, st =>
+                {
+                    st.Property(e => e.Status).HasConversion<string>().IsRequired().HasColumnName(nameof(Notification.Status));
+                });
+
                 entity.HasOne(d => d.Order)
                     .WithMany(p => p.Notifications)
                     .HasForeignKey(d => d.OrderId)

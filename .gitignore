@@ -115,3 +115,4 @@ Backup*/
 UpgradeLog*.XML
 src/.vs/config/applicationhost.config
 /src/Sales.Web/appsettings.Development.json
+/src/Sales.Web/clientconfig.Development.json

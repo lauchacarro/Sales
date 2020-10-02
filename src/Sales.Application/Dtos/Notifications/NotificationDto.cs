@@ -9,5 +9,6 @@ namespace Sales.Application.Dtos.Notifications
         public Guid OrderId { get; set; }
         public int Attempts { get; set; }
         public string Type { get; set; }
+        public string Status { get; set; }
     }
 }
