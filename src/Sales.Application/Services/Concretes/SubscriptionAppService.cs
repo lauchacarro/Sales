@@ -1,5 +1,7 @@
 ﻿
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 using Abp.Application.Services;
@@ -76,6 +78,13 @@ namespace Sales.Application.Services.Concretes
             _mobbexService = mobbexService ?? throw new ArgumentNullException(nameof(mobbexService));
         }
 
+        public IEnumerable<SubscriptionDto> GetActiveSubscriptions(Guid userId)
+        {
+            IEnumerable<Subscription> subscriptions = _subscriptionRepository.GetActives(userId);
+
+            return subscriptions.Select(x => _mapper.Map<SubscriptionDto>(x));
+        }
+
         public async Task<SubscriptionOrderDto> CreateSubscription(CreateSubscriptionInput input)
         {
             PlanPrice planPrice = _planPriceRepository.Get(input.PlanPriceId);
@@ -91,7 +100,6 @@ namespace Sales.Application.Services.Concretes
 
 
             Subscription subscription = _subscriptionDomainService.CreateSubscription(plan);
-            _subscriptionDomainService.ActiveSubscription(subscription);
             subscription = _subscriptionRepository.Insert(subscription);
 
 

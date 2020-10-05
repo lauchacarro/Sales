@@ -13,6 +13,6 @@ namespace Sales.Domain.Repositories
     {
         PlanPrice GetByPlan(Guid planId, Currency currency);
         IEnumerable<PlanPrice> GetByPlan(Guid planId);
-        PlanPrice GetByOrder(Guid orderId);
+        PlanPrice GetByOrder(Order order);
     }
 }

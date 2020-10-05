@@ -1,8 +1,6 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 
-using PayPalHttp;
-
 using Sales.Domain.Entities.Invoices;
 using Sales.Domain.Entities.Orders;
 using Sales.Domain.Entities.Plans;

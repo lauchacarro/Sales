@@ -52,7 +52,7 @@ namespace Sales.Web.Controllers
         [HttpPost]
         public IActionResult WebhookNotificationMobbex([FromQuery] Guid invoiceId, [FromForm] MobbexWebhookModel webhook)
         {
-            if(webhook.Data?.Payment?.Status?.Code == "200" && webhook.Type == "checkout")
+            if (webhook.Data?.Payment?.Status?.Code == "200" && webhook.Type == "checkout")
             {
                 _invoiceWebhookAppService.WebhookMobbex(invoiceId, int.Parse(webhook.Data.Payment.Status.Code), webhook.Data.Payment.Id);
             }

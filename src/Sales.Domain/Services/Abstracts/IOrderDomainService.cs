@@ -11,6 +11,7 @@ namespace Sales.Domain.Services.Abstracts
     {
         Order CreateOrderForSubscription(PlanPrice planPrice, Guid userId, DateTime creationDate);
         void PaymentPendingOrder(Order order);
+        void CancelOrder(Order order);
         void PayOrder(Order order);
     }
 }

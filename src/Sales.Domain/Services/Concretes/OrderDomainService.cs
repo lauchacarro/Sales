@@ -34,5 +34,10 @@ namespace Sales.Domain.Services.Concretes
         {
             order.Status.Status = OrderStatus.OrderStatusValue.Payed;
         }
+
+        public void CancelOrder(Order order)
+        {
+            order.Status.Status = OrderStatus.OrderStatusValue.Canceled;
+        }
     }
 }

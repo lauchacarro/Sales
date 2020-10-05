@@ -5,9 +5,12 @@ using System.Threading.Tasks;
 using Abp.Application.Services;
 using Abp.BackgroundJobs;
 using Abp.Domain.Repositories;
+using Abp.Events.Bus;
 
 using Microsoft.AspNetCore.Mvc;
 
+using Sales.Application.Events.OrderPayedEvent;
+using Sales.Application.Events.SendNotificationEvent;
 using Sales.Application.Services.Abstracts;
 using Sales.Domain.Entities.Invoices;
 using Sales.Domain.Entities.Notifications;
@@ -34,10 +37,12 @@ namespace Sales.Application.Services.Concretes
         private readonly IInvoiceDomainService _invoiceDomainService;
         private readonly IOrderDomainService _orderDomainService;
         private readonly ISubscriptionCycleDomainService _subscriptionCycleDomainService;
+        private readonly ISubscriptionDomainService _subscriptionDomainService;
         private readonly IInvoiceWebhookDomainService _invoiceWebhookDomainService;
         private readonly IPaypalService _paypalService;
         private readonly IBackgroundJobManager _backgroundJobManager;
         private readonly INotificationDomainService _notificationDomainService;
+        private readonly IEventBus _eventBus;
 
         public InvoiceWebhookAppService(IRepository<Invoice, Guid> invoiceRepository,
                                         IRepository<InvoiceWebhook, Guid> invoiceWebhookRepository,
@@ -51,6 +56,7 @@ namespace Sales.Application.Services.Concretes
                                         IInvoiceDomainService invoiceDomainService,
                                         IOrderDomainService orderDomainService,
                                         ISubscriptionCycleDomainService subscriptionCycleDomainService,
+                                        ISubscriptionDomainService subscriptionDomainService,
                                         IInvoiceWebhookDomainService invoiceWebhookDomainService,
                                         IPaypalService paypalService,
                                         IBackgroundJobManager backgroundJobManager,
@@ -62,6 +68,7 @@ namespace Sales.Application.Services.Concretes
             _orderRepository = orderRepository ?? throw new ArgumentNullException(nameof(orderRepository));
             _subscriptionCycleOrderRepository = subscriptionCycleOrderRepository ?? throw new ArgumentNullException(nameof(subscriptionCycleOrderRepository));
             _subscriptionCycleRepository = subscriptionCycleRepository ?? throw new ArgumentNullException(nameof(subscriptionCycleRepository));
+            _subscriptionDomainService = subscriptionDomainService ?? throw new ArgumentNullException(nameof(subscriptionDomainService));
             _subscriptionRepository = subscriptionRepository ?? throw new ArgumentNullException(nameof(subscriptionRepository));
             _planRepository = planRepository ?? throw new ArgumentNullException(nameof(planRepository));
             _noticationRepository = noticationRepository ?? throw new ArgumentNullException(nameof(noticationRepository));
@@ -72,6 +79,7 @@ namespace Sales.Application.Services.Concretes
             _paypalService = paypalService ?? throw new ArgumentNullException(nameof(paypalService));
             _backgroundJobManager = backgroundJobManager ?? throw new ArgumentNullException(nameof(backgroundJobManager));
             _notificationDomainService = notificationDomainService ?? throw new ArgumentNullException(nameof(notificationDomainService));
+            _eventBus = EventBus.Default;
         }
 
         [RemoteService(false)]
@@ -110,26 +118,10 @@ namespace Sales.Application.Services.Concretes
 
                     _invoiceRepository.Update(invoice);
 
-                    if (invoice.Order.Type.Type == OrderType.OrderTypeValue.Subscription)
-                    {
-                        SubscriptionCycleOrder subsubscriptionCycleOrder = _subscriptionCycleOrderRepository.GetAll().Single(x => x.OrderId == invoice.Order.Id);
-
-                        SubscriptionCycle subsubscriptionCycle = _subscriptionCycleRepository.Get(subsubscriptionCycleOrder.SubscriptionCycleId);
-
-                        Subscription subsubscription = _subscriptionRepository.Get(subsubscriptionCycle.SubscriptionId);
-
-                        Plan plan = _planRepository.Get(subsubscription.PlanId);
-
-                        _subscriptionCycleDomainService.ActiveSubscriptionCycle(subsubscriptionCycle, DateTime.Now, plan.Duration);
-                        _subscriptionCycleRepository.Update(subsubscriptionCycle);
-
-                        Notification notification = _notificationDomainService.CreateNotification(invoice.Order);
-                        _notificationDomainService.SetOrderPayed(notification);
-                        _noticationRepository.Insert(notification);
-                    }
+                    _eventBus.Trigger(new OrderPayedEventData(invoice.Order));
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 _invoiceWebhookDomainService.ChangeToError(invoiceWebhook);
             }
