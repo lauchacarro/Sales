@@ -3,20 +3,14 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Abp.Application.Services;
-using Abp.BackgroundJobs;
 using Abp.Domain.Repositories;
 using Abp.Events.Bus;
 
 using Microsoft.AspNetCore.Mvc;
 
 using Sales.Application.Events.OrderPayedEvent;
-using Sales.Application.Events.SendNotificationEvent;
 using Sales.Application.Services.Abstracts;
 using Sales.Domain.Entities.Invoices;
-using Sales.Domain.Entities.Notifications;
-using Sales.Domain.Entities.Orders;
-using Sales.Domain.Entities.Plans;
-using Sales.Domain.Entities.Subscriptions;
 using Sales.Domain.PaymentProviders;
 using Sales.Domain.Services.Abstracts;
 using Sales.Domain.ValueObjects.Orders;
@@ -28,57 +22,27 @@ namespace Sales.Application.Services.Concretes
         private readonly IRepository<Invoice, Guid> _invoiceRepository;
         private readonly IRepository<InvoiceWebhook, Guid> _invoiceWebhookRepository;
         private readonly IRepository<InvoicePaymentProvider, Guid> _invoicePaymentProviderRepository;
-        private readonly IRepository<Order, Guid> _orderRepository;
-        private readonly IRepository<SubscriptionCycleOrder, Guid> _subscriptionCycleOrderRepository;
-        private readonly IRepository<SubscriptionCycle, Guid> _subscriptionCycleRepository;
-        private readonly IRepository<Subscription, Guid> _subscriptionRepository;
-        private readonly IRepository<Plan, Guid> _planRepository;
-        private readonly IRepository<Notification, Guid> _noticationRepository;
         private readonly IInvoiceDomainService _invoiceDomainService;
         private readonly IOrderDomainService _orderDomainService;
-        private readonly ISubscriptionCycleDomainService _subscriptionCycleDomainService;
-        private readonly ISubscriptionDomainService _subscriptionDomainService;
         private readonly IInvoiceWebhookDomainService _invoiceWebhookDomainService;
         private readonly IPaypalService _paypalService;
-        private readonly IBackgroundJobManager _backgroundJobManager;
-        private readonly INotificationDomainService _notificationDomainService;
         private readonly IEventBus _eventBus;
 
         public InvoiceWebhookAppService(IRepository<Invoice, Guid> invoiceRepository,
                                         IRepository<InvoiceWebhook, Guid> invoiceWebhookRepository,
                                         IRepository<InvoicePaymentProvider, Guid> invoicePaymentProviderRepository,
-                                        IRepository<Order, Guid> orderRepository,
-                                        IRepository<SubscriptionCycleOrder, Guid> subscriptionCycleOrderRepository,
-                                        IRepository<SubscriptionCycle, Guid> subscriptionCycleRepository,
-                                        IRepository<Subscription, Guid> subscriptionRepository,
-                                        IRepository<Plan, Guid> planRepository,
-                                        IRepository<Notification, Guid> noticationRepository,
-                                        IInvoiceDomainService invoiceDomainService,
                                         IOrderDomainService orderDomainService,
-                                        ISubscriptionCycleDomainService subscriptionCycleDomainService,
-                                        ISubscriptionDomainService subscriptionDomainService,
+                                        IInvoiceDomainService invoiceDomainService,
                                         IInvoiceWebhookDomainService invoiceWebhookDomainService,
-                                        IPaypalService paypalService,
-                                        IBackgroundJobManager backgroundJobManager,
-                                        INotificationDomainService notificationDomainService)
+                                        IPaypalService paypalService)
         {
             _invoiceRepository = invoiceRepository ?? throw new ArgumentNullException(nameof(invoiceRepository));
             _invoiceWebhookRepository = invoiceWebhookRepository ?? throw new ArgumentNullException(nameof(invoiceWebhookRepository));
-            _invoicePaymentProviderRepository = invoicePaymentProviderRepository ?? throw new ArgumentNullException(nameof(invoicePaymentProviderRepository));
-            _orderRepository = orderRepository ?? throw new ArgumentNullException(nameof(orderRepository));
-            _subscriptionCycleOrderRepository = subscriptionCycleOrderRepository ?? throw new ArgumentNullException(nameof(subscriptionCycleOrderRepository));
-            _subscriptionCycleRepository = subscriptionCycleRepository ?? throw new ArgumentNullException(nameof(subscriptionCycleRepository));
-            _subscriptionDomainService = subscriptionDomainService ?? throw new ArgumentNullException(nameof(subscriptionDomainService));
-            _subscriptionRepository = subscriptionRepository ?? throw new ArgumentNullException(nameof(subscriptionRepository));
-            _planRepository = planRepository ?? throw new ArgumentNullException(nameof(planRepository));
-            _noticationRepository = noticationRepository ?? throw new ArgumentNullException(nameof(noticationRepository));
             _invoiceDomainService = invoiceDomainService ?? throw new ArgumentNullException(nameof(invoiceDomainService));
+            _invoicePaymentProviderRepository = invoicePaymentProviderRepository ?? throw new ArgumentNullException(nameof(invoicePaymentProviderRepository));
             _orderDomainService = orderDomainService ?? throw new ArgumentNullException(nameof(orderDomainService));
-            _subscriptionCycleDomainService = subscriptionCycleDomainService ?? throw new ArgumentNullException(nameof(subscriptionCycleDomainService));
             _invoiceWebhookDomainService = invoiceWebhookDomainService ?? throw new ArgumentNullException(nameof(invoiceWebhookDomainService));
             _paypalService = paypalService ?? throw new ArgumentNullException(nameof(paypalService));
-            _backgroundJobManager = backgroundJobManager ?? throw new ArgumentNullException(nameof(backgroundJobManager));
-            _notificationDomainService = notificationDomainService ?? throw new ArgumentNullException(nameof(notificationDomainService));
             _eventBus = EventBus.Default;
         }
 
@@ -123,6 +87,7 @@ namespace Sales.Application.Services.Concretes
             }
             catch (Exception ex)
             {
+                Logger.Error("Ocurrio un error al Pagar una Orden.", ex);
                 _invoiceWebhookDomainService.ChangeToError(invoiceWebhook);
             }
             finally

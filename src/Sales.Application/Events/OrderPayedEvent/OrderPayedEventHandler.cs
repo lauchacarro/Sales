@@ -15,10 +15,7 @@ using Abp.Events.Bus.Handlers;
 
 using AutoMapper;
 
-using Microsoft.EntityFrameworkCore;
-
 using Sales.Application.Dtos.Notifications;
-using Sales.Application.Events.SendNotificationEvent;
 using Sales.Domain.Entities.Notifications;
 using Sales.Domain.Entities.Orders;
 using Sales.Domain.Entities.Plans;
@@ -116,7 +113,20 @@ namespace Sales.Application.Events.OrderPayedEvent
                         _notificationDomainService.SetOrderPayed(notification);
                         _noticationRepository.Insert(notification);
 
-                        await _backgroundJobManager.EnqueueEventAsync(new SendNotificationEventData(notification.Id));
+                        NotificationDto notificationDto = _mapper.Map<NotificationDto>(notification);
+
+                        HttpResponseMessage httpResponse = await _httpClient.PostAsJsonAsync(_clientOptions.NotificactionUrl, notificationDto);
+
+                        if (httpResponse.IsSuccessStatusCode)
+                        {
+                            _noticationRepository.Delete(notification);
+                        }
+                        else
+                        {
+                            _notificationDomainService.AddAttempt(notification);
+
+                            _noticationRepository.Update(notification);
+                        }
                     }
                     else
                     {
