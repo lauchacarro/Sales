@@ -52,6 +52,7 @@ namespace Sales.Web.Startup
             Configuration.Get<IClientOptions>().NotificactionUrl = _appConfiguration.GetSection(nameof(ClientOptions)).Get<ClientOptions>().NotificactionUrl;
             Configuration.Get<IClientOptions>().WebhookCancelUrl = _appConfiguration.GetSection(nameof(ClientOptions)).Get<ClientOptions>().WebhookCancelUrl;
             Configuration.Get<IClientOptions>().WebhookReturnUrl = _appConfiguration.GetSection(nameof(ClientOptions)).Get<ClientOptions>().WebhookReturnUrl;
+            Configuration.Get<IClientOptions>().OrderDaysToExpire = _appConfiguration.GetSection(nameof(ClientOptions)).Get<ClientOptions>().OrderDaysToExpire;
 
 
             Configuration.Modules.AbpAspNetCore()

@@ -16,6 +16,7 @@ using Abp.Events.Bus.Handlers;
 using AutoMapper;
 
 using Sales.Application.Dtos.Notifications;
+using Sales.Application.Events.Orders.OrderSubscriptionPayedEvent;
 using Sales.Domain.Entities.Notifications;
 using Sales.Domain.Entities.Orders;
 using Sales.Domain.Entities.Plans;
@@ -24,10 +25,11 @@ using Sales.Domain.Options;
 using Sales.Domain.Repositories;
 using Sales.Domain.Services.Abstracts;
 using Sales.Domain.ValueObjects.Orders;
+using Sales.Domain.ValueObjects.Subscriptions;
 
-namespace Sales.Application.Events.OrderPayedEvent
+namespace Sales.Application.Events.Orders.OrderSubscriptionPayedEvent
 {
-    public class OrderPayedEventHandler : IAsyncEventHandler<OrderPayedEventData>, ITransientDependency
+    public class OrderSubscriptionPayedEventHandler : IAsyncEventHandler<OrderSubscriptionPayedEventData>, ITransientDependency
     {
         private readonly IOrderRepository _orderRepository;
         private readonly ISubscriptionRepository _subscriptionRepository;
@@ -45,7 +47,7 @@ namespace Sales.Application.Events.OrderPayedEvent
         private readonly IBackgroundJobManager _backgroundJobManager;
         private readonly HttpClient _httpClient;
 
-        public OrderPayedEventHandler(IOrderRepository orderRepository,
+        public OrderSubscriptionPayedEventHandler(IOrderRepository orderRepository,
                                       ISubscriptionRepository subscriptionRepository,
                                       IRepository<SubscriptionCycle, Guid> subscriptionCycleRepository,
                                       IRepository<SubscriptionCycleOrder, Guid> subscriptionCycleOrderRepository,
@@ -81,71 +83,47 @@ namespace Sales.Application.Events.OrderPayedEvent
         }
 
         [UnitOfWork]
-        public async Task HandleEventAsync(OrderPayedEventData eventData)
+        public async Task HandleEventAsync(OrderSubscriptionPayedEventData eventData)
         {
-            if (eventData.Entity.Type.Type == OrderType.OrderTypeValue.Subscription)
+            Order orderToUpdate = null;
+            SubscriptionCycleOrder subscriptionCycleOrder = null;
+            SubscriptionCycle subscriptionCycle = null;
+            Subscription subscription = null;
+
+            orderToUpdate = _orderRepository.Get(eventData.Entity.Id);
+
+            subscriptionCycleOrder = _subscriptionCycleOrderRepository.GetAll().Single(x => x.OrderId == orderToUpdate.Id);
+            subscriptionCycle = _subscriptionCycleRepository.Get(subscriptionCycleOrder.SubscriptionCycleId);
+            subscription = _subscriptionRepository.Get(subscriptionCycle.SubscriptionId);
+
+            _orderDomainService.PayOrder(orderToUpdate);
+
+
+            Notification notification = _notificationDomainService.CreateNotification(orderToUpdate);
+            _notificationDomainService.SetOrderPayed(notification);
+            _noticationRepository.Insert(notification);
+
+            NotificationDto notificationDto = _mapper.Map<NotificationDto>(notification);
+
+            HttpResponseMessage httpResponse = await _httpClient.PostAsJsonAsync(_clientOptions.NotificactionUrl, notificationDto);
+
+            if (httpResponse.IsSuccessStatusCode)
             {
-                PlanPrice planPrice = _planPriceRepository.GetByOrder(eventData.Entity);
-
-                IEnumerable<Order> paymentPendingOrders = _orderRepository.GetPendingPayments(planPrice.Plan, eventData.Entity.UserId);
-
-                foreach (Order order in paymentPendingOrders)
-                {
-                    Order orderToUpdate = null;
-                    SubscriptionCycleOrder subscriptionCycleOrder = null;
-                    SubscriptionCycle subscriptionCycle = null;
-                    Subscription subscription = null;
-
-                    if (order.Id == eventData.Entity.Id)
-                    {
-                        orderToUpdate = _orderRepository.Get(order.Id);
-
-                        subscriptionCycleOrder = _subscriptionCycleOrderRepository.GetAll().Single(x => x.OrderId == orderToUpdate.Id);
-                        subscriptionCycle = _subscriptionCycleRepository.Get(subscriptionCycleOrder.SubscriptionCycleId);
-                        subscription = _subscriptionRepository.Get(subscriptionCycle.SubscriptionId);
-
-                        _subscriptionDomainService.ActiveSubscription(subscription);
-                        _subscriptionCycleDomainService.ActiveSubscriptionCycle(subscriptionCycle, DateTime.Now, planPrice.Plan.Duration);
-                        _orderDomainService.PayOrder(orderToUpdate);
-
-
-                        Notification notification = _notificationDomainService.CreateNotification(orderToUpdate);
-                        _notificationDomainService.SetOrderPayed(notification);
-                        _noticationRepository.Insert(notification);
-
-                        NotificationDto notificationDto = _mapper.Map<NotificationDto>(notification);
-
-                        HttpResponseMessage httpResponse = await _httpClient.PostAsJsonAsync(_clientOptions.NotificactionUrl, notificationDto);
-
-                        if (httpResponse.IsSuccessStatusCode)
-                        {
-                            _noticationRepository.Delete(notification);
-                        }
-                        else
-                        {
-                            _notificationDomainService.AddAttempt(notification);
-
-                            _noticationRepository.Update(notification);
-                        }
-                    }
-                    else
-                    {
-                        orderToUpdate = _orderRepository.Get(order.Id);
-
-                        subscriptionCycleOrder = _subscriptionCycleOrderRepository.GetAll().Single(x => x.OrderId == orderToUpdate.Id);
-                        subscriptionCycle = _subscriptionCycleRepository.Get(subscriptionCycleOrder.SubscriptionCycleId);
-                        subscription = _subscriptionRepository.Get(subscriptionCycle.SubscriptionId);
-
-                        _subscriptionDomainService.CancelSubscription(subscription);
-                        _subscriptionCycleDomainService.CancelSubscriptionCycle(subscriptionCycle);
-                        _orderDomainService.CancelOrder(orderToUpdate);
-                    }
-
-                    _subscriptionRepository.Update(subscription);
-                    _subscriptionCycleRepository.Update(subscriptionCycle);
-                    _orderRepository.Update(orderToUpdate);
-                }
+                _noticationRepository.Delete(notification);
             }
+            else
+            {
+                _notificationDomainService.AddAttempt(notification);
+
+                _noticationRepository.Update(notification);
+            }
+
+
+            _subscriptionRepository.Update(subscription);
+            _subscriptionCycleRepository.Update(subscriptionCycle);
+            _orderRepository.Update(orderToUpdate);
+
+
         }
     }
 }

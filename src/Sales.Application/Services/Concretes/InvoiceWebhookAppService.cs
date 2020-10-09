@@ -8,7 +8,8 @@ using Abp.Events.Bus;
 
 using Microsoft.AspNetCore.Mvc;
 
-using Sales.Application.Events.OrderPayedEvent;
+using Sales.Application.Events.Orders.OrderRenewSubscriptionPayedEvent;
+using Sales.Application.Events.Orders.OrderSubscriptionPayedEvent;
 using Sales.Application.Services.Abstracts;
 using Sales.Domain.Entities.Invoices;
 using Sales.Domain.PaymentProviders;
@@ -82,7 +83,16 @@ namespace Sales.Application.Services.Concretes
 
                     _invoiceRepository.Update(invoice);
 
-                    _eventBus.Trigger(new OrderPayedEventData(invoice.Order));
+                    switch (invoice.Order.Type.Type)
+                    {
+                        case OrderType.OrderTypeValue.Subscription:
+                            _eventBus.Trigger(new OrderSubscriptionPayedEventData(invoice.Order));
+                            break;
+                        case OrderType.OrderTypeValue.RenewSubscription:
+                            _eventBus.Trigger(new OrderRenewSubscriptionPayedEventData(invoice.Order));
+                            break;
+                    }
+
                 }
             }
             catch (Exception ex)

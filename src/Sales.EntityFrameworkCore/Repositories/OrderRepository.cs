@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 using Sales.Domain.Entities.Orders;
 using Sales.Domain.Entities.Plans;
+using Sales.Domain.Entities.Subscriptions;
 using Sales.Domain.Repositories;
 using Sales.Domain.ValueObjects.Orders;
 using Sales.Domain.ValueObjects.Subscriptions;
@@ -19,6 +20,31 @@ namespace Sales.EntityFrameworkCore.Repositories
     {
         public OrderRepository(IDbContextProvider<SalesDbContext> dbContextProvider) : base(dbContextProvider)
         {
+        }
+
+        public Order GetBySubscriptionCycle(SubscriptionCycle subscriptionCycle)
+        {
+            var result = (from sc in Context.SubscriptionCycles.AsNoTracking()
+                          join sco in Context.SubscriptionCycleOrders.AsNoTracking() on sc.Id equals sco.SubscriptionCycleId
+                          join o in Context.Orders.AsNoTracking() on sco.OrderId equals o.Id
+                          where sc.Id == subscriptionCycle.Id
+
+                          select o).Single();
+
+            return result;
+        }
+
+        public IEnumerable<Order> GetByUser(Guid userId)
+        {
+            return GetAll().Include(x => x.SubscriptionCycleOrders)
+                .ThenInclude(x => x.SubscriptionCycle)
+                .ThenInclude(x => x.Subscription)
+                .Include(x => x.Invoices)
+                .ThenInclude(x => x.InvocePaymentProviders)
+                .ThenInclude(x => x.InvoceWebhooks)
+                .Include(x => x.ProductSaleOrders)
+                .Include(x => x.Notifications)
+                .Where(x => x.UserId == userId).ToList();
         }
 
         public IEnumerable<Order> GetPendingPayments(Plan plan, Guid userId)

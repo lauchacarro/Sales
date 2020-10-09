@@ -2,6 +2,7 @@
   "ClientOptions": {
     "WebhookReturnUrl": "https://tugimnasiaonline.com",
     "WebhookCancelUrl": "https://tugimnasiaonline.com",
-    "NotificactionUrl": "https://tugimnasiaonline.com/api/sales/notification"
+    "NotificactionUrl": "https://tugimnasiaonline.com/api/sales/notification",
+    "OrderDaysToExpire": 7
   }
 }

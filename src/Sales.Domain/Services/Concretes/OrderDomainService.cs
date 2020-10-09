@@ -30,6 +30,20 @@ namespace Sales.Domain.Services.Concretes
             };
         }
 
+        public Order CreateOrderForRenewSubscription(PlanPrice planPrice, Guid userId, DateTime creationDate)
+        {
+            return new Order
+            {
+                CreationTime = creationDate,
+                Currency = planPrice.Currency,
+                Status = new OrderStatus(OrderStatus.OrderStatusValue.Created),
+                TotalAmount = planPrice.Price,
+                UserId = userId,
+                Type = new OrderType(OrderType.OrderTypeValue.RenewSubscription),
+                IsDeleted = false
+            };
+        }
+
         public void PayOrder(Order order)
         {
             order.Status.Status = OrderStatus.OrderStatusValue.Payed;

@@ -10,7 +10,7 @@ using Abp.UI;
 using AutoMapper;
 
 using Sales.Application.Dtos.Orders;
-using Sales.Application.Events.OrderPayedEvent;
+using Sales.Application.Events.Orders.OrderSubscriptionPayedEvent;
 using Sales.Application.Services.Abstracts;
 using Sales.Domain.Entities.Orders;
 using Sales.Domain.ValueObjects.Orders;
@@ -50,7 +50,7 @@ namespace Sales.Application.Services.Concretes
 
             if (order.Status.Status == OrderStatus.OrderStatusValue.Payed)
             {
-                _eventBus.Trigger(new OrderPayedEventData(order));
+                _eventBus.Trigger(new OrderSubscriptionPayedEventData(order));
             }
 
             return _mapper.Map<OrderDto>(order);

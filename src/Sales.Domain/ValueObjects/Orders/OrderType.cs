@@ -20,6 +20,7 @@ namespace Sales.Domain.ValueObjects.Orders
         public enum OrderTypeValue
         {
             Subscription,
+            RenewSubscription,
             Sales
         }
         public OrderTypeValue Type { get; set; }
