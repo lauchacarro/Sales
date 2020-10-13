@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -7,13 +8,17 @@ using Abp.Domain.Repositories;
 using Abp.Domain.Uow;
 using Abp.ObjectMapping;
 
+using Microsoft.EntityFrameworkCore;
+
 using Sales.Domain.Entities.Invoices;
 using Sales.Domain.Entities.Orders;
 using Sales.Domain.Entities.Plans;
 using Sales.Domain.Entities.Subscriptions;
+using Sales.Domain.Options;
 using Sales.Domain.PaymentProviders;
 using Sales.Domain.Repositories;
 using Sales.Domain.Services.Abstracts;
+using Sales.Domain.ValueObjects.Orders;
 
 namespace Sales.Application.Services.Concretes
 {
@@ -35,7 +40,7 @@ namespace Sales.Application.Services.Concretes
         private readonly IObjectMapper _mapper;
         private readonly IPaypalService _paypalService;
         private readonly IMobbexService _mobbexService;
-        private readonly IUnitOfWorkManager _unitOfWorkManager;
+        private readonly IClientOptions _clientOptions;
 
         public JobAppService(ISubscriptionRepository subscriptionRepository,
                              ISubscriptionCycleRepository subscriptionCycleRepository,
@@ -52,7 +57,8 @@ namespace Sales.Application.Services.Concretes
                              IInvoiceDomainService invoiceDomainService,
                              IObjectMapper mapper,
                              IPaypalService paypalService,
-                             IMobbexService mobbexService)
+                             IMobbexService mobbexService,
+                             IClientOptions clientOptions)
         {
             _subscriptionRepository = subscriptionRepository ?? throw new ArgumentNullException(nameof(subscriptionRepository));
             _subscriptionCycleRepository = subscriptionCycleRepository ?? throw new ArgumentNullException(nameof(subscriptionCycleRepository));
@@ -70,18 +76,19 @@ namespace Sales.Application.Services.Concretes
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _paypalService = paypalService ?? throw new ArgumentNullException(nameof(paypalService));
             _mobbexService = mobbexService ?? throw new ArgumentNullException(nameof(mobbexService));
+            _clientOptions = clientOptions ?? throw new ArgumentNullException(nameof(clientOptions));
         }
 
         public async Task CreateNewSubscriptionCycles()
         {
-            var subscriptionCycles = _subscriptionCycleRepository.GetSoonExpires(DateTime.Now, 19);
+            var subscriptionCycles = _subscriptionCycleRepository.GetSoonExpires(DateTime.Now, _clientOptions.OrderDaysToExpire);
 
             foreach (var cycle in subscriptionCycles)
             {
                 using var unitOfWork = UnitOfWorkManager.Begin();
 
                 SubscriptionCycle newCycle = _subscriptionCycleDomainService.CreateSubscriptionCycle(cycle.Subscription, DateTime.Now);
-                _subscriptionCycleDomainService.ActiveSubscriptionCycle(newCycle, cycle.ExpirationDate.Value, cycle.Subscription.Plan.Duration);
+                _subscriptionCycleDomainService.PaymentPendingSubscriptionCycle(newCycle);
 
                 _subscriptionCycleRepository.Insert(newCycle);
 
@@ -114,6 +121,40 @@ namespace Sales.Application.Services.Concretes
                 };
 
                 _invoicePaymentProviderRepository.Insert(invoicePaymentProvider);
+
+                unitOfWork.Complete();
+            }
+        }
+
+        public void VerifyOrderExpiration()
+        {
+            IEnumerable<Order> orders = _orderRepository.GetAll()
+                .Where(x => (x.Status.Status == OrderStatus.OrderStatusValue.PaymentPending || x.Status.Status == OrderStatus.OrderStatusValue.Created) && DateTime.Today > x.CreationTime.AddDays(_clientOptions.OrderDaysToExpire)).ToList();
+
+            foreach (Order order in orders)
+            {
+                using var unitOfWork = UnitOfWorkManager.Begin();
+
+                _orderDomainService.ExpireOrder(order);
+
+                if (order.Type.Type == OrderType.OrderTypeValue.Subscription || order.Type.Type == OrderType.OrderTypeValue.RenewSubscription)
+                {
+                    SubscriptionCycleOrder cycleOrder = _subscriptionCycleOrderRepository.GetAll().Include(x => x.SubscriptionCycle).ThenInclude(x => x.Subscription).Single(x => x.OrderId == order.Id);
+
+                    _subscriptionCycleDomainService.CancelSubscriptionCycle(cycleOrder.SubscriptionCycle);
+
+                    if (order.Type.Type == OrderType.OrderTypeValue.RenewSubscription)
+                    {
+                        _subscriptionDomainService.SuspendSubscription(cycleOrder.SubscriptionCycle.Subscription);
+
+                    }
+                    else if (order.Type.Type == OrderType.OrderTypeValue.Subscription)
+                    {
+                        _subscriptionDomainService.CancelSubscription(cycleOrder.SubscriptionCycle.Subscription);
+                    }
+
+                    _subscriptionCycleOrderRepository.Update(cycleOrder);
+                }
 
                 unitOfWork.Complete();
             }

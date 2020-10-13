@@ -1,16 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 using Abp.Application.Services;
 using Abp.Domain.Repositories;
-using Abp.Domain.Uow;
 
 using Sales.Domain.Entities.Invoices;
 using Sales.Domain.Entities.Notifications;
 using Sales.Domain.Entities.Orders;
-using Sales.Domain.Entities.Plans;
 using Sales.Domain.Entities.Products;
 using Sales.Domain.Entities.Subscriptions;
 using Sales.Domain.Repositories;

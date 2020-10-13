@@ -16,7 +16,8 @@ namespace Sales.Domain.ValueObjects.Notifications
         public enum NotificationTypeValue
         {
             Normal,
-            OrderPayed
+            OrderPayed,
+            NewSubscribeCycle
         }
         public NotificationTypeValue Type { get; set; }
 

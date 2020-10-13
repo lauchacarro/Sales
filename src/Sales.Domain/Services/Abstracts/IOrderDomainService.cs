@@ -14,5 +14,6 @@ namespace Sales.Domain.Services.Abstracts
         void PaymentPendingOrder(Order order);
         void CancelOrder(Order order);
         void PayOrder(Order order);
+        void ExpireOrder(Order order);
     }
 }

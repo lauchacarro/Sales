@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 using Abp.Events.Bus;
@@ -17,6 +18,7 @@ using Sales.Domain.Enums;
 using Sales.Domain.Options;
 using Sales.Domain.PaymentProviders;
 using Sales.Domain.ValueObjects;
+using Sales.EntityFrameworkCore.PaymentProviders.Paypal.Request;
 
 using PaypalOrder = PayPalCheckoutSdk.Orders.Order;
 
@@ -33,9 +35,21 @@ namespace Sales.EntityFrameworkCore.PaymentProviders
             _eventBus = eventBus ?? throw new ArgumentNullException(nameof(eventBus));
         }
 
-        public Task CancelInvoice(InvoicePaymentProvider invoice)
+        public async Task CancelInvoice(InvoicePaymentProvider invoice)
         {
-            throw new NotImplementedException();
+            PayPalEnvironment environment = CreateEnvironment();
+            var client = new PayPalHttpClient(environment);
+
+            var request = new OrderDeleteRequest(invoice.Transaction);
+
+            try
+            {
+                await client.Execute(request);
+            }
+            catch (HttpException httpException)
+            {
+                var debugId = httpException.Headers.GetValues("PayPal-Debug-Id").FirstOrDefault();
+            }
         }
 
         public async Task<InvoicePaymentProvider> CreateUriForPayment(Invoice invoice, Domain.Entities.Orders.Order order, Plan plan)
@@ -142,6 +156,108 @@ namespace Sales.EntityFrameworkCore.PaymentProviders
                 ReturnUrl = returnUrl,
                 CancelUrl = cancelUrl
             };
+        }
+
+        public async Task<InvoicePaymentProvider> CreateUriForPayment(Invoice invoice, Domain.Entities.Orders.Order order, string description)
+        {
+            PayPalEnvironment environment = CreateEnvironment();
+            var client = new PayPalHttpClient(environment);
+
+            var payment = new OrderRequest()
+            {
+                CheckoutPaymentIntent = "CAPTURE",
+                PurchaseUnits = new List<PurchaseUnitRequest>()
+                {
+                    new PurchaseUnitRequest()
+                    {
+                        CustomId = invoice.Id.ToString(),
+                        Description = description,
+                        AmountWithBreakdown = new AmountWithBreakdown()
+                        {
+                            CurrencyCode = Currency.CurrencyValue.USD.ToString(),
+                            Value = Convert.ToInt32(order.TotalAmount).ToString()
+                        }
+                    }
+                },
+                ApplicationContext = CreateApplicationContext()
+            };
+
+            //https://developer.paypal.com/docs/api/orders/v2/#orders_create
+            var request = new OrdersCreateRequest();
+            request.Prefer("return=representation");
+            request.RequestBody(payment);
+
+            try
+            {
+                var response = await client.Execute(request);
+                var result = response.Result<PaypalOrder>();
+                var uri = new Uri(result.Links.Single(l => l.Rel == "approve").Href);
+
+                return new InvoicePaymentProvider
+                {
+                    InvoceId = invoice.Id,
+                    Link = uri,
+                    Transaction = result.Id,
+                    PaymentProvider = new PaymentProvider(PaymentProvider.PaymentProviderValue.Paypal)
+                };
+
+            }
+            catch (HttpException httpException)
+            {
+                var debugId = httpException.Headers.GetValues("PayPal-Debug-Id").FirstOrDefault();
+                throw httpException;
+            }
+        }
+
+        public async Task<InvoicePaymentProvider> UpdateAmountInvoice(InvoicePaymentProvider invoicePaymentProvider, Domain.Entities.Orders.Order order)
+        {
+            PayPalEnvironment environment = CreateEnvironment();
+            var client = new PayPalHttpClient(environment);
+
+            var getOrderRequest = new OrdersGetRequest(invoicePaymentProvider.Transaction);
+
+            try
+            {
+                var getOrderResponse = await client.Execute(getOrderRequest);
+                var getOrderResult = getOrderResponse.Result<PaypalOrder>();
+                var payment = new OrderRequest()
+                {
+                    CheckoutPaymentIntent = "CAPTURE",
+                    PurchaseUnits = new List<PurchaseUnitRequest>()
+                    {
+                        new PurchaseUnitRequest()
+                        {
+                            CustomId = getOrderResult.PurchaseUnits[0].CustomId,
+                            Description = getOrderResult.PurchaseUnits[0].Description,
+                            AmountWithBreakdown = new AmountWithBreakdown()
+                            {
+                                CurrencyCode = Currency.CurrencyValue.USD.ToString(),
+                                Value = Convert.ToInt32(order.TotalAmount).ToString()
+                            }
+                        }
+                    },
+                    ApplicationContext = CreateApplicationContext()
+                };
+
+                var request = new OrdersCreateRequest();
+                request.Prefer("return=representation");
+                request.RequestBody(payment);
+                var response = await client.Execute(request);
+                var result = response.Result<PaypalOrder>();
+                var uri = new Uri(result.Links.Single(l => l.Rel == "approve").Href);
+
+                await CancelInvoice(invoicePaymentProvider);
+
+                invoicePaymentProvider.Link = uri;
+                invoicePaymentProvider.Transaction = result.Id;
+
+                return invoicePaymentProvider;
+            }
+            catch (HttpException httpException)
+            {
+                var debugId = httpException.Headers.GetValues("PayPal-Debug-Id").FirstOrDefault();
+                throw httpException;
+            }
         }
     }
 }

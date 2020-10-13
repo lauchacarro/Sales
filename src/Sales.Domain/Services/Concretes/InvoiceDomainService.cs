@@ -18,7 +18,6 @@ namespace Sales.Domain.Services.Concretes
         public void CancelInvoice(Invoice invoice)
         {
             invoice.Status.Status = ValueObjects.Invoices.InvoiceStatus.InvoiceStatusValue.Canceled;
-
         }
 
         public Invoice CreateInvoice(Order order, DateTime creationDate)
@@ -45,7 +44,6 @@ namespace Sales.Domain.Services.Concretes
         public void PayInvoice(Invoice invoice)
         {
             invoice.Status.Status = ValueObjects.Invoices.InvoiceStatus.InvoiceStatusValue.Payed;
-
         }
     }
 }

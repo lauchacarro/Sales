@@ -1,7 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Json;
+using System.Text;
 using System.Threading.Tasks;
 
 using Abp.BackgroundJobs;
@@ -12,19 +13,17 @@ using Abp.Events.Bus.Handlers;
 
 using AutoMapper;
 
-using Sales.Application.Dtos.Notifications;
 using Sales.Domain.Entities.Invoices;
 using Sales.Domain.Entities.Notifications;
 using Sales.Domain.Entities.Orders;
-using Sales.Domain.Entities.Plans;
 using Sales.Domain.Entities.Subscriptions;
 using Sales.Domain.Options;
 using Sales.Domain.Repositories;
 using Sales.Domain.Services.Abstracts;
 
-namespace Sales.Application.Events.Orders.OrderRenewSubscriptionPayedEvent
+namespace Sales.Application.Events.Orders.OrderExtraPayedEvent
 {
-    public class OrderRenewSubscriptionPayedEventHandler : IAsyncEventHandler<OrderRenewSubscriptionPayedEventData>, ITransientDependency
+    public class OrderExtraPayedEventHandler : IAsyncEventHandler<OrderExtraPayedEventData>, ITransientDependency
     {
         private readonly IOrderRepository _orderRepository;
         private readonly ISubscriptionRepository _subscriptionRepository;
@@ -36,19 +35,20 @@ namespace Sales.Application.Events.Orders.OrderRenewSubscriptionPayedEvent
         private readonly ISubscriptionCycleDomainService _subscriptionCycleDomainService;
         private readonly IOrderDomainService _orderDomainService;
         private readonly INotificationDomainService _notificationDomainService;
+        private readonly IRepository<Invoice, Guid> _invoiceRepository;
         private readonly IEventBus _eventBus;
         private readonly IMapper _mapper;
+        private readonly IInvoiceDomainService _invoiceDomainService;
         private readonly IClientOptions _clientOptions;
         private readonly IBackgroundJobManager _backgroundJobManager;
-        private readonly IInvoiceDomainService _invoiceDomainService;
-        private readonly IRepository<Invoice, Guid> _invoiceRepository;
         private readonly HttpClient _httpClient;
 
-        public OrderRenewSubscriptionPayedEventHandler(IOrderRepository orderRepository,
+        public OrderExtraPayedEventHandler(IOrderRepository orderRepository,
                                       ISubscriptionRepository subscriptionRepository,
                                       IRepository<SubscriptionCycle, Guid> subscriptionCycleRepository,
                                       IRepository<SubscriptionCycleOrder, Guid> subscriptionCycleOrderRepository,
                                       IPlanPriceRepository planPriceRepository,
+                                      IRepository<Invoice, Guid> invoiceRepository,
                                       ISubscriptionDomainService subscriptionDomainService,
                                       ISubscriptionCycleDomainService subscriptionCycleDomainService,
                                       IOrderDomainService orderDomainService,
@@ -56,9 +56,8 @@ namespace Sales.Application.Events.Orders.OrderRenewSubscriptionPayedEvent
                                       IMapper mapper,
                                       IClientOptions clientOptions,
                                       IHttpClientFactory httpClientFactory,
-                                      IBackgroundJobManager backgroundJobManager,
-                                      IRepository<Invoice, Guid> invoiceRepository,
                                       IInvoiceDomainService invoiceDomainService,
+                                      IBackgroundJobManager backgroundJobManager,
                                       INotificationDomainService notificationDomainService)
         {
             _orderRepository = orderRepository ?? throw new ArgumentNullException(nameof(orderRepository));
@@ -81,43 +80,11 @@ namespace Sales.Application.Events.Orders.OrderRenewSubscriptionPayedEvent
 
 
         }
-        public async Task HandleEventAsync(OrderRenewSubscriptionPayedEventData eventData)
+        public async Task HandleEventAsync(OrderExtraPayedEventData eventData)
         {
-            Order orderToUpdate = _orderRepository.Get(eventData.Entity.Id);
-
-            PlanPrice planPrice = _planPriceRepository.GetByOrder(eventData.Entity);
-
-            SubscriptionCycleOrder subscriptionCycleOrder = null;
-            SubscriptionCycle subscriptionCycle = null;
-
-            subscriptionCycleOrder = _subscriptionCycleOrderRepository.GetAll().Single(x => x.OrderId == orderToUpdate.Id);
-            subscriptionCycle = _subscriptionCycleRepository.Get(subscriptionCycleOrder.SubscriptionCycleId);
-
-            _subscriptionCycleDomainService.ActiveSubscriptionCycle(subscriptionCycle, DateTime.Now, planPrice.Plan.Duration);
-            _subscriptionCycleRepository.Update(subscriptionCycle);
-
             Invoice invoice = _invoiceRepository.GetAllIncluding(x => x.InvocePaymentProviders).Single(x => x.OrderId == eventData.Entity.Id);
             _invoiceDomainService.PayInvoice(invoice);
             _invoiceRepository.Update(invoice);
-
-            Notification notification = _notificationDomainService.CreateNotification(orderToUpdate);
-            _notificationDomainService.SetNewSubscribeCycle(notification);
-            _noticationRepository.Insert(notification);
-
-            NotificationDto notificationDto = _mapper.Map<NotificationDto>(notification);
-
-            HttpResponseMessage httpResponse = await _httpClient.PostAsJsonAsync(_clientOptions.NotificactionUrl, notificationDto);
-
-            if (httpResponse.IsSuccessStatusCode)
-            {
-                _noticationRepository.Delete(notification);
-            }
-            else
-            {
-                _notificationDomainService.AddAttempt(notification);
-
-                _noticationRepository.Update(notification);
-            }
         }
     }
 }

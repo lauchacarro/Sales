@@ -14,7 +14,7 @@ using Sales.Domain.ValueObjects.Orders;
 
 namespace Sales.Domain.Entities.Orders
 {
-    public class Order : Entity<Guid>, IHasUserId<Guid>, IHasCreationTime, IHasModificationTime, ISoftDelete
+    public class Order : Entity<Guid>, IHasUserId<Guid>, IHasCreationTime, IHasModificationTime
     {
         public Order()
         {
@@ -29,8 +29,6 @@ namespace Sales.Domain.Entities.Orders
         public decimal TotalAmount { get; set; }
         public DateTime CreationTime { get; set; }
         public DateTime? LastModificationTime { get; set; }
-        public bool IsDeleted { get; set; }
-
 
         public OrderStatus Status { get; set; }
         public OrderType Type { get; set; }

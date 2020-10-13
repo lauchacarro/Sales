@@ -10,6 +10,7 @@ namespace Sales.Domain.Services.Abstracts
     {
         Notification CreateNotification(Order order);
         void SetOrderPayed(Notification notification);
+        void SetNewSubscribeCycle(Notification notification);
         void AddAttempt(Notification notification);
         void Processing(Notification notification);
         void SetError(Notification notification);

@@ -78,10 +78,7 @@ namespace Sales.Application.Services.Concretes
                 if (invoice.Order.Status.Status == OrderStatus.OrderStatusValue.PaymentPending)
                 {
 
-                    _invoiceDomainService.PayInvoice(invoice);
                     _orderDomainService.PayOrder(invoice.Order);
-
-                    _invoiceRepository.Update(invoice);
 
                     switch (invoice.Order.Type.Type)
                     {

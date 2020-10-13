@@ -37,6 +37,11 @@ namespace Sales.Domain.Services.Concretes
             notification.Status.Status = NotificationStatus.NotificationStatusValue.Error;
         }
 
+        public void SetNewSubscribeCycle(Notification notification)
+        {
+            notification.Type.Type = NotificationType.NotificationTypeValue.NewSubscribeCycle;
+        }
+
         public void SetOrderPayed(Notification notification)
         {
             notification.Type.Type = NotificationType.NotificationTypeValue.OrderPayed;

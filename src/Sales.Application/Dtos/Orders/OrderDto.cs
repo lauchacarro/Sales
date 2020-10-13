@@ -15,7 +15,6 @@ namespace Sales.Application.Dtos.Orders
         public decimal TotalAmount { get; set; }
         public DateTime CreationTime { get; set; }
         public DateTime? LastModificationTime { get; set; }
-        public bool IsDeleted { get; set; }
 
 
         public string Status { get; set; }

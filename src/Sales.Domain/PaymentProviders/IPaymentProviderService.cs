@@ -13,6 +13,8 @@ namespace Sales.Domain.PaymentProviders
     {
         Task<InvoicePaymentProvider> CreateUriForPayment(Invoice invoice, Order order, Plan plan);
         Task<InvoicePaymentProvider> CreateUriForPayment(Invoice invoice, Order order, ProductSale productSale);
+        Task<InvoicePaymentProvider> CreateUriForPayment(Invoice invoice, Order order, string description);
         Task CancelInvoice(InvoicePaymentProvider invoice);
+        Task<InvoicePaymentProvider> UpdateAmountInvoice(InvoicePaymentProvider invoicePaymentProvider, Domain.Entities.Orders.Order order);
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 using Sales.Domain.Entities.Invoices;
@@ -24,9 +25,9 @@ namespace Sales.EntityFrameworkCore.PaymentProviders.Mobbex
             _mobbexOptions = mobbexOptions;
         }
 
-        public Task CancelInvoice(InvoicePaymentProvider invoice)
+        public async Task CancelInvoice(InvoicePaymentProvider invoice)
         {
-            throw new System.NotImplementedException();
+            await _apiGateway.DeleteAsync<object>(Path.Combine(ENDPOINT, invoice.Transaction));
         }
 
         public async Task<InvoicePaymentProvider> CreateUriForPayment(Invoice invoice, Order order, Plan plan)
@@ -57,6 +58,36 @@ namespace Sales.EntityFrameworkCore.PaymentProviders.Mobbex
 
 
         public Task<InvoicePaymentProvider> CreateUriForPayment(Invoice invoice, Order order, ProductSale productSale)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public async Task<InvoicePaymentProvider> CreateUriForPayment(Invoice invoice, Order order, string description)
+        {
+            var contract = new CheckoutCreateContract
+            {
+                Total = order.TotalAmount,
+                Currency = Currency.CurrencyValue.ARS.ToString(),
+                Reference = invoice.Id.ToString(),
+                Description = $"${order.TotalAmount}",
+                ReturnUrl = _mobbexOptions.ReturnUrl + "?invoiceId=" + invoice.Id,
+                Webhook = _mobbexOptions.WebhookUrl + "?invoiceId=" + invoice.Id,
+                Test = _mobbexOptions.Environment == Domain.Enums.PaymentProviderEnvironment.Sandbox,
+                Options = new SubscriptionOptionsDto()
+            };
+
+            var response = await _apiGateway.PostAsync<CheckoutContract, CheckoutCreateContract>(ENDPOINT, contract);
+
+            return new InvoicePaymentProvider
+            {
+                Link = new System.Uri(response.Data.Url),
+                Transaction = response.Data.Id,
+                InvoceId = invoice.Id,
+                PaymentProvider = new PaymentProvider(PaymentProvider.PaymentProviderValue.Mobbex)
+            };
+        }
+
+        public Task<InvoicePaymentProvider> UpdateAmountInvoice(InvoicePaymentProvider invoicePaymentProvider, Order order)
         {
             throw new System.NotImplementedException();
         }

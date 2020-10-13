@@ -15,6 +15,7 @@ namespace Sales.EntityFrameworkCore.PaymentProviders.Mobbex
     public interface IApiGateway : ITransientDependency
     {
         Task<T> GetAsync<T>(string uri);
+        Task<T> DeleteAsync<T>(string uri);
         Task<Message<T>> PostAsync<T>(string uri, T content);
         Task<Message<T1>> PostAsync<T1, T2>(string uri, T2 content);
     }
@@ -99,6 +100,15 @@ namespace Sales.EntityFrameworkCore.PaymentProviders.Mobbex
             _httpClient.DefaultRequestHeaders.Add("x-api-key", _mobbexOptions.ClientId);
             _httpClient.DefaultRequestHeaders.Add("x-access-token", _mobbexOptions.ClientSecret);
             _httpClient.DefaultRequestHeaders.Add("lang", "es");
+        }
+
+        public async Task<T> DeleteAsync<T>(string uri)
+        {
+            AddHeaders();
+            var response = await _httpClient.DeleteAsync(uri);
+            response.EnsureSuccessStatusCode();
+            var data = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<T>(data);
         }
     }
 }

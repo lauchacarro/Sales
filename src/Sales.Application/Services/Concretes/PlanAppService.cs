@@ -67,6 +67,20 @@ namespace Sales.Application.Services.Concretes
             return _mapper.Map<PlanPriceDto>(planPrice);
         }
 
+        [HttpPut]
+        public PlanPriceDto UpdatePrice(CreatePlanPriceInput input)
+        {
+            PlanPrice planPrice = _mapper.Map<PlanPrice>(input);
+
+            PlanPrice currentPlanPrice = _planPriceRepository.GetByPlan(input.PlanId, planPrice.Currency);
+
+            planPrice = _mapper.Map<CreatePlanPriceInput, PlanPrice>(input, currentPlanPrice);
+
+            _planPriceRepository.Update(planPrice);
+
+            return _mapper.Map<PlanPriceDto>(planPrice);
+        }
+
         public IEnumerable<PlanPriceDto> Get(Guid id)
         {
             Plan plan = _planRepository.GetAllIncluding(x => x.PlanPrices).Single(x => x.Id == id);
