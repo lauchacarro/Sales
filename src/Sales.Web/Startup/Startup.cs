@@ -7,6 +7,7 @@ using Castle.Facilities.Logging;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -31,6 +32,11 @@ namespace Sales.Web.Startup
                 options.DocInclusionPredicate((docName, description) => true);
             });
 
+            services.Configure<ForwardedHeadersOptions>(options =>
+            {
+                options.ForwardedHeaders =
+                    ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+            });
 
             //Configure Abp and Dependency Injection
             return services.AddAbp<SalesWebModule>(options =>
@@ -44,6 +50,8 @@ namespace Sales.Web.Startup
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseForwardedHeaders();
+
             app.UseAbp(); //Initializes ABP framework.
 
             if (env.IsDevelopment())

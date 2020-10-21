@@ -101,7 +101,7 @@ namespace Sales.Application.Events.Orders.OrderRenewSubscriptionPayedEvent
             _invoiceRepository.Update(invoice);
 
             Notification notification = _notificationDomainService.CreateNotification(orderToUpdate);
-            _notificationDomainService.SetNewSubscribeCycle(notification);
+            _notificationDomainService.SetOrderPayed(notification);
             _noticationRepository.Insert(notification);
 
             NotificationDto notificationDto = _mapper.Map<NotificationDto>(notification);

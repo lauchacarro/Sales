@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
 
 using Abp.Application.Services;
@@ -8,9 +10,12 @@ using Abp.Domain.Repositories;
 using Abp.Domain.Uow;
 using Abp.ObjectMapping;
 
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
+using Sales.Application.Dtos.Notifications;
 using Sales.Domain.Entities.Invoices;
+using Sales.Domain.Entities.Notifications;
 using Sales.Domain.Entities.Orders;
 using Sales.Domain.Entities.Plans;
 using Sales.Domain.Entities.Subscriptions;
@@ -27,7 +32,8 @@ namespace Sales.Application.Services.Concretes
         private readonly ISubscriptionRepository _subscriptionRepository;
         private readonly ISubscriptionCycleRepository _subscriptionCycleRepository;
         private readonly IRepository<SubscriptionCycleOrder, Guid> _subscriptionCycleOrderRepository;
-        private readonly IRepository<Plan, Guid> _planRepository;
+        private readonly IRepository<Notification, Guid> _noticationRepository;
+        private readonly INotificationDomainService _notificationDomainService;
         private readonly IPlanPriceRepository _planPriceRepository;
         private readonly IOrderRepository _orderRepository;
         private readonly IRepository<Invoice, Guid> _invoiceRepository;
@@ -41,11 +47,13 @@ namespace Sales.Application.Services.Concretes
         private readonly IPaypalService _paypalService;
         private readonly IMobbexService _mobbexService;
         private readonly IClientOptions _clientOptions;
+        private readonly HttpClient _httpClient;
 
         public JobAppService(ISubscriptionRepository subscriptionRepository,
                              ISubscriptionCycleRepository subscriptionCycleRepository,
                              IRepository<SubscriptionCycleOrder, Guid> subscriptionCycleOrderRepository,
-                             IRepository<Plan, Guid> planRepository,
+                             IRepository<Notification, Guid> notificationRepository,
+                             INotificationDomainService notificationDomainService,
                              IPlanPriceRepository planPriceRepository,
                              IOrderRepository orderRepository,
                              IRepository<Invoice, Guid> invoiceRepository,
@@ -58,12 +66,14 @@ namespace Sales.Application.Services.Concretes
                              IObjectMapper mapper,
                              IPaypalService paypalService,
                              IMobbexService mobbexService,
-                             IClientOptions clientOptions)
+                             IClientOptions clientOptions,
+                             IHttpClientFactory httpClientFactory)
         {
             _subscriptionRepository = subscriptionRepository ?? throw new ArgumentNullException(nameof(subscriptionRepository));
             _subscriptionCycleRepository = subscriptionCycleRepository ?? throw new ArgumentNullException(nameof(subscriptionCycleRepository));
             _subscriptionCycleOrderRepository = subscriptionCycleOrderRepository ?? throw new ArgumentNullException(nameof(subscriptionCycleOrderRepository));
-            _planRepository = planRepository ?? throw new ArgumentNullException(nameof(planRepository));
+            _noticationRepository = notificationRepository ?? throw new ArgumentNullException(nameof(notificationRepository));
+            _notificationDomainService = notificationDomainService ?? throw new ArgumentNullException(nameof(notificationDomainService));
             _planPriceRepository = planPriceRepository ?? throw new ArgumentNullException(nameof(planPriceRepository));
             _orderRepository = orderRepository ?? throw new ArgumentNullException(nameof(orderRepository));
             _invoiceRepository = invoiceRepository ?? throw new ArgumentNullException(nameof(invoiceRepository));
@@ -77,8 +87,10 @@ namespace Sales.Application.Services.Concretes
             _paypalService = paypalService ?? throw new ArgumentNullException(nameof(paypalService));
             _mobbexService = mobbexService ?? throw new ArgumentNullException(nameof(mobbexService));
             _clientOptions = clientOptions ?? throw new ArgumentNullException(nameof(clientOptions));
+            _httpClient = httpClientFactory?.CreateClient() ?? throw new ArgumentNullException(nameof(httpClientFactory));
         }
 
+        [HttpGet]
         public async Task CreateNewSubscriptionCycles()
         {
             var subscriptionCycles = _subscriptionCycleRepository.GetSoonExpires(DateTime.Now, _clientOptions.OrderDaysToExpire);
@@ -122,10 +134,29 @@ namespace Sales.Application.Services.Concretes
 
                 _invoicePaymentProviderRepository.Insert(invoicePaymentProvider);
 
+                Notification notification = _notificationDomainService.CreateNotification(order);
+                _notificationDomainService.SetNewSubscribeCycle(notification);
+                _noticationRepository.Insert(notification);
+
+                NotificationDto notificationDto = _mapper.Map<NotificationDto>(notification);
+
+                HttpResponseMessage httpResponse = await _httpClient.PostAsJsonAsync(_clientOptions.NotificactionUrl, notificationDto);
+
+                if (httpResponse.IsSuccessStatusCode)
+                {
+                    _noticationRepository.Delete(notification);
+                }
+                else
+                {
+                    _notificationDomainService.AddAttempt(notification);
+
+                    _noticationRepository.Update(notification);
+                }
                 unitOfWork.Complete();
             }
         }
 
+        [HttpGet]
         public void VerifyOrderExpiration()
         {
             IEnumerable<Order> orders = _orderRepository.GetAll()
